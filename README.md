@@ -27,7 +27,7 @@ This is an independent side project between the two of us who started it. No off
 
 ---
 
-**Open the flashcards:** just visit the GitHub Pages link for this repo.
+**Open the flashcards:** just visit the [GitHub Pages link](https://mrreedii.github.io/CySAplus_Flash_Cards/) for this repo.
 
 Study hard. Share what works. Lift each other up.  
 We're all trying to pass the same exams.  
