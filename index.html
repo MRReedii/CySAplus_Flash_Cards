@@ -1,280 +1,760 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CySA+ Study Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Poppins,sans-serif;background:linear-gradient(135deg,#08111f,#1a1147,#0d6efd);background-size:300% 300%;animation:bg 12s ease infinite;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;overflow:hidden}
-@keyframes bg{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.bg span{position:absolute;border-radius:50%;background:#ffffff12;animation:f 18s linear infinite}
-.bg span:nth-child(1){width:220px;height:220px;left:8%;top:15%}
-.bg span:nth-child(2){width:120px;height:120px;right:10%;top:20%}
-.bg span:nth-child(3){width:180px;height:180px;left:60%;bottom:5%}
-@keyframes f{50%{transform:translateY(-30px)}}
-.wrap{width:min(900px,92vw)}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.logo{font-size:2rem;font-weight:700}
-.badge{background:#ffffff20;padding:10px 18px;border-radius:999px;backdrop-filter:blur(12px)}
-.card{background:#ffffff18;border:1px solid #ffffff30;border-radius:24px;padding:36px;min-height:380px;max-height:65vh;overflow-y:auto;backdrop-filter:blur(18px);box-shadow:0 20px 60px #0006;display:flex;flex-direction:column;justify-content:space-between;transition:.35s;cursor:pointer}
-.card:hover{transform:translateY(-4px) scale(1.005)}
-h2{font-size:1.15rem;font-weight:500;line-height:1.6;white-space:pre-wrap;text-align:left;margin:0 0 20px 0}
-p{opacity:.7;font-size:0.9rem;margin:0;text-align:right}
-.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
-button{border:none;border-radius:14px;padding:16px;font:inherit;font-weight:600;background:linear-gradient(135deg,#00d4ff,#6d5dfc);color:#fff;cursor:pointer;transition:.2s}
-button:hover{transform:translateY(-3px);box-shadow:0 10px 25px #0005}
-.progress{height:10px;background:#ffffff22;border-radius:99px;overflow:hidden;margin:20px 0}
-.bar{height:100%;width:2%;background:linear-gradient(90deg,#00ffd0,#00a2ff);transition:width .2s}
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #08111f, #1a1147, #0d6efd);
+    background-size: 300% 300%;
+    animation: bg 12s ease infinite;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  @keyframes bg {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Animated background elements */
+  .bg span { position: fixed; border-radius: 50%; background: #ffffff12; animation: f 18s linear infinite; pointer-events: none; }
+  .bg span:nth-child(1) { width: 220px; height: 220px; left: 8%; top: 15%; }
+  .bg span:nth-child(2) { width: 120px; height: 120px; right: 10%; top: 20%; }
+  .bg span:nth-child(3) { width: 180px; height: 180px; left: 60%; bottom: 5%; }
+  @keyframes f { 50% { transform: translateY(-30px); } }
+
+  /* Feature Flag Visibility Rule */
+  .feature-in-dev { display: none !important; }
+
+  /* View Visibility Rules */
+  .view { display: none; width: min(960px, 100%); z-index: 1; flex-direction: column; gap: 24px; }
+  .view.active { display: flex; }
+
+  /* Section Styling */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .glass-panel {
+    background: #ffffff18;
+    border: 1px solid #ffffff30;
+    border-radius: 24px;
+    padding: 28px;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 60px #0006;
+  }
+
+  /* Developer Header Panel */
+  .dev-header {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px dashed #00d4ff;
+    border-radius: 20px;
+    padding: 20px 24px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    backdrop-filter: blur(14px);
+  }
+  .dev-header.visible { display: flex; }
+  .dev-header-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #00d4ff;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dev-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .dev-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dev-control-group label {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    font-weight: 500;
+  }
+  .dev-select {
+    background: #ffffff18;
+    color: #fff;
+    border: 1px solid #ffffff30;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .dev-select option {
+    background: #08111f;
+    color: #fff;
+  }
+
+  /* Header Hero */
+  .hero-panel { text-align: center; padding: 6px 10px; }
+  .hero-logo { 
+    font-size: 2.2rem; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s;
+  }
+  .hero-logo:active { transform: scale(0.98); }
+  .cohort-badge {
+    display: inline-block;
+    background: #ffffff20;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 14px;
+    backdrop-filter: blur(12px);
+  }
+  .hero-tagline { opacity: 0.8; font-size: 0.95rem; max-width: 520px; margin: 0 auto 22px auto; line-height: 1.5; }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* Buttons */
+  .btn {
+    border: none;
+    border-radius: 14px;
+    padding: 12px 24px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-primary { background: linear-gradient(135deg, #00d4ff, #6d5dfc); color: #fff; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px #0005; }
+  .btn-secondary { background: #ffffff20; color: #fff; border: 1px solid #ffffff30; }
+  .btn-secondary:hover { background: #ffffff30; transform: translateY(-2px); }
+
+  /* Continue Studying Card */
+  .continue-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #ffffff25, #ffffff10);
+  }
+  .continue-info h3 { margin: 0 0 6px 0; font-size: 1.15rem; }
+  .continue-info p { margin: 0; opacity: 0.7; font-size: 0.9rem; }
+  .continue-progress { min-width: 160px; flex: 1; max-width: 220px; }
+  .progress-bar-container { height: 10px; background: #ffffff22; border-radius: 99px; overflow: hidden; margin-top: 8px; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #00ffd0, #00a2ff); border-radius: 99px; }
+
+  /* Upload Area */
+  .upload-box {
+    border: 2px dashed #ffffff40;
+    border-radius: 18px;
+    padding: 24px;
+    text-align: center;
+    background: #ffffff0a;
+    transition: 0.2s;
+    cursor: pointer;
+  }
+  .upload-box:hover { border-color: #00d4ff; background: #ffffff14; }
+  .upload-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .upload-text { font-size: 0.9rem; opacity: 0.8; margin-bottom: 12px; }
+
+  /* Decks Grid */
+  .grid-decks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+  /* Deck Card Styling */
+  .deck-card {
+    background: #ffffff12;
+    border: 1px solid #ffffff20;
+    border-radius: 18px;
+    padding: 20px;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .deck-card:hover { transform: translateY(-4px); background: #ffffff20; border-color: #ffffff40; }
+  .deck-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 4px; }
+  .deck-meta { opacity: 0.7; font-size: 0.85rem; margin-bottom: 10px; }
+  .deck-description { font-size: 0.85rem; opacity: 0.8; line-height: 1.4; margin-bottom: 16px; }
+  .deck-topics-list { font-size: 0.8rem; opacity: 0.6; line-height: 1.4; margin-bottom: 16px; }
+
+  /* Topic Pills */
+  .grid-topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .topic-card {
+    background: #ffffff10;
+    border: 1px solid #ffffff20;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .topic-card:hover { background: #ffffff25; transform: translateY(-2px); }
+
+  /* Progress Metrics */
+  .progress-row { display: flex; flex-direction: column; gap: 14px; }
+  .progress-item { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; }
+  .progress-label { width: 110px; font-weight: 500; flex-shrink: 0; }
+  .progress-bar-flex { flex-grow: 1; }
+  .progress-percent { width: 42px; text-align: right; font-weight: 600; font-size: 0.85rem; opacity: 0.9; }
+
+  /* Community Activity */
+  .activity-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+  .activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ffffff15;
+    font-size: 0.9rem;
+    gap: 12px;
+  }
+  .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .activity-user { font-weight: 500; }
+  .activity-time { opacity: 0.5; font-size: 0.8rem; white-space: nowrap; }
+
+  /* Study Materials Tabs */
+  .nav-tabs { display: flex; gap: 10px; border-bottom: 1px solid #ffffff20; padding-bottom: 12px; margin-bottom: 16px; overflow-x: auto; }
+  .tab-item {
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #ffffff10;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .tab-item.active { background: #ffffff30; }
+  .tab-item:hover { background: #ffffff25; }
+
+  /* Two-column layout helper */
+  .split-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  /* Flashcard Viewer Styles */
+  .header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .badge { background: #ffffff20; padding: 10px 18px; border-radius: 999px; backdrop-filter: blur(12px); font-size: 0.9rem; }
+  .card {
+    background: #ffffff18;
+    border: 1px solid #ffffff30;
+    border-radius: 24px;
+    padding: 36px;
+    min-height: 380px;
+    max-height: 60vh;
+    overflow-y: auto;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 60px #0006;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: .35s;
+    cursor: pointer;
+  }
+  .card:hover { transform: translateY(-4px) scale(1.005); }
+  .card h2 { font-size: 1.15rem; font-weight: 500; line-height: 1.6; white-space: pre-wrap; text-align: left; margin: 0 0 20px 0; }
+  .card p { opacity: .7; font-size: 0.9rem; margin: 0; text-align: right; }
+  .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .progress { height: 10px; background: #ffffff22; border-radius: 99px; overflow: hidden; }
+  .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffd0, #00a2ff); transition: width .2s; }
+
+  /* Footer */
+  .footer-text { text-align: center; opacity: 0.5; font-size: 0.8rem; margin-top: 10px; line-height: 1.5; }
+
+  @media (max-width: 600px) {
+    .continue-card { flex-direction: column; align-items: stretch; }
+    .continue-progress { max-width: none; }
+    .controls { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
+
 <div class="bg"><span></span><span></span><span></span></div>
-<div class="wrap">
-  <div class="header">
-    <div class="logo">🛡 CySA+ Flashcards</div>
-    <div class="badge">Question <span id="qnum">1</span>/50</div>
+
+<!-- HUB VIEW -->
+<div id="hubView" class="view active">
+
+  <!-- HIDDEN DEVELOPER HEADER CONTROLS -->
+  <div class="dev-header" id="devHeader">
+    <div class="dev-header-title">
+      <span>🛠 Developer Feature Flag Controls</span>
+      <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal; text-transform: none;">Click title 5x to hide</span>
+    </div>
+    <div class="dev-controls-grid">
+      <div class="dev-control-group">
+        <label for="flagShowAll">SHOW_ALL_DEV_FEATURES</label>
+        <select id="flagShowAll" class="dev-select" onchange="updateFeatureFlag('SHOW_ALL_DEV_FEATURES', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagUpload">ENABLE_UPLOAD</label>
+        <select id="flagUpload" class="dev-select" onchange="updateFeatureFlag('ENABLE_UPLOAD', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagProgress">ENABLE_PROGRESS_TRACKING</label>
+        <select id="flagProgress" class="dev-select" onchange="updateFeatureFlag('ENABLE_PROGRESS_TRACKING', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagTopics">ENABLE_TOPIC_BROWSING</label>
+        <select id="flagTopics" class="dev-select" onchange="updateFeatureFlag('ENABLE_TOPIC_BROWSING', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagMaterials">ENABLE_STUDY_MATERIALS</label>
+        <select id="flagMaterials" class="dev-select" onchange="updateFeatureFlag('ENABLE_STUDY_MATERIALS', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+    </div>
   </div>
+
+  <!-- HERO -->
+  <div class="glass-panel hero-panel">
+    <div class="hero-logo" id="heroTitle" onclick="handleTitleClick()">🛡 CYSA+ STUDY HUB</div>
+    <div class="hero-tagline">Shared cybersecurity question sets and study materials for our cohort. Study together. Share what works.</div>
+  </div>
+
+  <!-- FEATURE: Continue Studying Card -->
+  <div class="glass-panel continue-card feature-in-dev feature-continue">
+    <div class="continue-info">
+      <div style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.05em; margin-bottom: 4px;">Jump Back In</div>
+      <h3>CySA+ Main Flashcard Deck</h3>
+      <p>Question 37 of 50</p>
+    </div>
+    <div class="continue-progress">
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500;">
+        <span>Progress</span>
+        <span>74%</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 74%;"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startDeck('default')">Resume</button>
+  </div>
+
+  <!-- AVAILABLE QUESTION SETS -->
+  <div>
+    <div class="section-title">📚 Available Question Sets</div>
+    <div class="grid-decks" id="decksContainer">
+      <!-- Default Deck -->
+      <div class="deck-card">
+        <div>
+          <div class="deck-title">🛡 CySA+ Comprehensive Deck</div>
+          <div class="deck-meta">50 Questions · Official Cohort Set</div>
+          <div class="deck-description">Covers incident response, beaconing, SASE, EDR, threat intelligence, and vulnerability management.</div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="startDeck('default')">Start Practice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE: UPLOAD -->
+  <div class="glass-panel feature-in-dev feature-upload">
+    <div class="section-title">
+      <span>📤 Upload Question Set</span>
+      <span style="font-size: 0.75rem; opacity: 0.6; font-weight: normal;">Accepts .json</span>
+    </div>
+    <div class="upload-box" onclick="document.getElementById('jsonFileInput').click()">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text">Drag & drop your question set JSON file here, or click to browse</div>
+      <button class="btn btn-secondary" type="button">Select JSON File</button>
+      <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+    </div>
+  </div>
+
+  <!-- FEATURE: Browse By Topic -->
+  <div class="feature-in-dev feature-topics">
+    <div class="section-title">🎯 Browse by Topic</div>
+    <div class="grid-topics">
+      <div class="topic-card" onclick="startDeck('default')"><span>🌐 Network Security</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>🔎 Threat Intelligence</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>🛡 Vulnerability Mgmt</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>💻 Application Security</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>🚨 Incident Response</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>🔍 Digital Forensics</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>⚙️ Security Operations</span> <span>➔</span></div>
+      <div class="topic-card" onclick="startDeck('default')"><span>📊 Reporting & Metrics</span> <span>➔</span></div>
+    </div>
+  </div>
+
+  <!-- FEATURE: Progress & Activity -->
+  <div class="feature-in-dev feature-progress">
+    <div class="split-grid">
+      <!-- Your Progress -->
+      <div class="glass-panel">
+        <div class="section-title">📊 Your Progress</div>
+        <div class="progress-row">
+          <div class="progress-item">
+            <div class="progress-label">CySA+</div>
+            <div class="progress-bar-flex">
+              <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 72%;"></div></div>
+            </div>
+            <div class="progress-percent">72%</div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">Networking</div>
+            <div class="progress-bar-flex">
+              <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 45%;"></div></div>
+            </div>
+            <div class="progress-percent">45%</div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">Splunk</div>
+            <div class="progress-bar-flex">
+              <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 28%;"></div></div>
+            </div>
+            <div class="progress-percent">28%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Activity -->
+      <div class="glass-panel">
+        <div class="section-title">👥 Community Activity</div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div><span class="activity-user">Sarah</span> added "Incident Response Questions"</div>
+            <div class="activity-time">12m ago</div>
+          </div>
+          <div class="activity-item">
+            <div><span class="activity-user">Mike</span> added "Networking Review"</div>
+            <div class="activity-time">1h ago</div>
+          </div>
+          <div class="activity-item">
+            <div><span class="activity-user">Jamal</span> added "Splunk Fundamentals"</div>
+            <div class="activity-time">yesterday</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="document.getElementById('jsonFileInput').click()">+ Share a Study Set</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE: Study Materials Tabs -->
+  <div class="glass-panel feature-in-dev feature-materials">
+    <div class="section-title">📖 Study Materials</div>
+    <div class="nav-tabs">
+      <button class="tab-item active" onclick="switchMaterialTab(this)">Flashcards</button>
+      <button class="tab-item" onclick="switchMaterialTab(this)">Practice Questions</button>
+      <button class="tab-item" onclick="switchMaterialTab(this)">Notes & Guides</button>
+      <button class="tab-item" onclick="switchMaterialTab(this)">External Resources</button>
+    </div>
+    <div id="materialsContent" style="font-size: 0.9rem; opacity: 0.85; line-height: 1.6;">
+      Access student-curated reference guides, Wireshark packet analysis walk-throughs, Packet Tracer configurations, and cheatsheets shared across the cohort.
+    </div>
+  </div>
+
+  <div class="footer-text">
+    Built by students, for students.<br>
+  </div>
+</div>
+
+<!-- STUDY VIEW -->
+<div id="studyView" class="view">
+  <div class="header">
+    <button class="btn btn-secondary" onclick="showHub()">⬅ Back to Hub</button>
+    <div class="badge"><span id="deckTitleDisplay">CySA+ Flashcards</span> · Question <span id="qnum">1</span>/<span id="qtotal">50</span></div>
+  </div>
+
   <div class="progress"><div class="bar" id="bar"></div></div>
+
   <div class="card" id="card" onclick="flip()">
     <h2 id="title">Question Loading...</h2>
     <p id="hint">Click to flip</p>
   </div>
+
   <div class="controls">
-    <button onclick="prev()">⬅ Previous</button>
-    <button onclick="flip()">🔄 Flip</button>
-    <button onclick="next()">Next ➡</button>
-    <button onclick="shuffle()">🎲 Shuffle</button>
+    <button class="btn btn-primary" onclick="prev()">⬅ Prev</button>
+    <button class="btn btn-primary" onclick="flip()">🔄 Flip</button>
+    <button class="btn btn-primary" onclick="next()">Next ➡</button>
+    <button class="btn btn-primary" onclick="shuffle()">🎲 Shuffle</button>
   </div>
 </div>
 
 <script>
-const cards = [
-  {
-    q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution",
-    a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline."
-  },
-  {
-    q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking",
-    a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors."
-  },
-  {
-    q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity",
-    a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing."
-  },
-  {
-    q: "4. A network design routes corporate security policies directly through cloud edge elements, replacing standard physical firewalls. What architecture is this?\n\nA) SDN\nB) SASE\nC) Hybrid PKI\nD) Zero Trust",
-    a: "Correct Answer: B\n\nRationale: SASE fuses software-defined routing with cloud-delivered edge security functions like firewalls and brokers."
-  },
-  {
-    q: "5. Which protocol establishes centralized cryptographic credentials to let users access multiple disparate company resources through one initial authentication?\n\nA) Federation\nB) SSO\nC) PAM\nD) MFA",
-    a: "Correct Answer: B\n\nRationale: Single Sign-On (SSO) lets users authenticate once to access multiple separate systems securely."
-  },
-  {
-    q: "6. An engineer deploys a gateway utility to decrypt inbound traffic, inspect the files for active malware, and re-encrypt the data before internal delivery. What technique is this?\n\nA) SASE orchestration\nB) SSL inspection\nC) PKI certification management\nD) Data loss prevention",
-    a: "Correct Answer: B\n\nRationale: SSL inspection decrypts encrypted network traffic at a gateway to scan for threats before re-encrypting it."
-  },
-  {
-    q: "7. While auditing network metrics, an analyst notes a sudden massive surge in point-to-point connections directly between client laptops. What is this?\n\nA) Authorized serverless compute calls\nB) Irregular peer-to-peer communication\nC) Application-related service interruption\nD) Network beaconing activity",
-    a: "Correct Answer: B\n\nRationale: Direct workstation-to-workstation traffic breaks standard client-server models, signaling lateral movement."
-  },
-  {
-    q: "8. Which item stores low-level operating system configurations and is routinely monitored for malware persistence mechanisms like Run and RunOnce keys?\n\nA) File structures configuration locations\nB) System process hollowing nodes\nC) Windows Registry\nD) Hardware architecture firmware",
-    a: "Correct Answer: C\n\nRationale: The Windows Registry houses system configurations; malware uses its Run keys to maintain persistence."
-  },
-  {
-    q: "9. A security tool automatically runs an endpoint isolation routine immediately after discovering a valid file hash signature. What platform handled this?\n\nA) SIEM\nB) SOAR\nC) EDR\nD) CASB",
-    a: "Correct Answer: C\n\nRationale: Endpoint Detection and Response (EDR) agents actively record system behaviors and can automatically isolate individual hosts."
-  },
-  {
-    q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto",
-    a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address."
-  },
-  {
-    q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings",
-    a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions."
-  },
-  {
-    q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat",
-    a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns."
-  },
-  {
-    q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment",
-    a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence."
-  },
-  {
-    q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass",
-    a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods."
-  },
-  {
-    q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering",
-    a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators."
-  },
-  {
-    q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment",
-    a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code."
-  },
-  {
-    q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing",
-    a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations."
-  },
-  {
-    q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling",
-    a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions."
-  },
-  {
-    q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices",
-    a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines."
-  },
-  {
-    q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series",
-    a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers."
-  },
-  {
-    q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS",
-    a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields."
-  },
-  {
-    q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB",
-    a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance."
-  },
-  {
-    q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction",
-    a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability."
-  },
-  {
-    q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative",
-    a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system."
-  },
-  {
-    q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability",
-    a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands."
-  },
-  {
-    q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration",
-    a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control."
-  },
-  {
-    q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow",
-    a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files."
-  },
-  {
-    q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation",
-    a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures."
-  },
-  {
-    q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint",
-    a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately."
-  },
-  {
-    q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management",
-    a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks."
-  },
-  {
-    q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide",
-    a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish."
-  },
-  {
-    q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK",
-    a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions."
-  },
-  {
-    q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis",
-    a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court."
-  },
-  {
-    q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training",
-    a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection."
-  },
-  {
-    q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan",
-    a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation."
-  },
-  {
-    q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment",
-    a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally."
-  },
-  {
-    q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation",
-    a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines."
-  },
-  {
-    q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan",
-    a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents."
-  },
-  {
-    q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition",
-    a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans."
-  },
-  {
-    q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management",
-    a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed."
-  },
-  {
-    q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure",
-    a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation."
-  },
-  {
-    q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary",
-    a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership."
-  },
-  {
-    q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)",
-    a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified."
-  },
-  {
-    q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends",
-    a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed."
-  },
-  {
-    q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan",
-    a: "Correct Answer: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines."
-  },
-  {
-    q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing",
-    a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards."
-  },
-  {
-    q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory",
-    a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach."
-  },
-  {
-    q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels",
-    a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs."
-  },
-  {
-    q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody",
-    a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time."
-  },
-  {
-    q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation",
-    a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds."
+  // FEATURE FLAGS CONFIGURATION
+  const FEATURE_FLAGS = {
+    SHOW_ALL_DEV_FEATURES: false,
+    ENABLE_UPLOAD: false,
+    ENABLE_PROGRESS_TRACKING: false,
+    ENABLE_TOPIC_BROWSING: false,
+    ENABLE_STUDY_MATERIALS: false
+  };
+
+  // Re-evaluates CSS classes based on active feature flags
+  function applyFeatureFlags() {
+    // First hide all feature nodes
+    document.querySelectorAll('.feature-continue, .feature-upload, .feature-topics, .feature-progress, .feature-materials').forEach(el => {
+      el.classList.add('feature-in-dev');
+    });
+
+    // Check conditions to unhide elements
+    if (FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES) {
+      document.querySelectorAll('.feature-continue, .feature-upload, .feature-topics, .feature-progress, .feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
+    } else {
+      if (FEATURE_FLAGS.ENABLE_UPLOAD) {
+        document.querySelectorAll('.feature-upload').forEach(el => el.classList.remove('feature-in-dev'));
+      }
+      if (FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING) {
+        document.querySelectorAll('.feature-progress, .feature-continue').forEach(el => el.classList.remove('feature-in-dev'));
+      }
+      if (FEATURE_FLAGS.ENABLE_TOPIC_BROWSING) {
+        document.querySelectorAll('.feature-topics').forEach(el => el.classList.remove('feature-in-dev'));
+      }
+      if (FEATURE_FLAGS.ENABLE_STUDY_MATERIALS) {
+        document.querySelectorAll('.feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
+      }
+    }
   }
-];
 
-let i = 0, s = false;
+  // Sync developer panel dropdown selectors with active state
+  function syncDevControlSelects() {
+    document.getElementById('flagShowAll').value = String(FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES);
+    document.getElementById('flagUpload').value = String(FEATURE_FLAGS.ENABLE_UPLOAD);
+    document.getElementById('flagProgress').value = String(FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING);
+    document.getElementById('flagTopics').value = String(FEATURE_FLAGS.ENABLE_TOPIC_BROWSING);
+    document.getElementById('flagMaterials').value = String(FEATURE_FLAGS.ENABLE_STUDY_MATERIALS);
+  }
 
-function render() {
-  document.getElementById("title").textContent = s ? cards[i].a : cards[i].q;
-  document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
-  document.getElementById("qnum").textContent = i + 1;
-  document.getElementById("bar").style.width = ((i + 1) / cards.length * 100) + "%";
-  document.getElementById("card").scrollTop = 0;
-}
+  // Update specific feature flag from dropdown input
+  function updateFeatureFlag(flagName, valueStr) {
+    FEATURE_FLAGS[flagName] = valueStr === 'true';
+    applyFeatureFlags();
+    syncDevControlSelects();
+  }
 
-function flip() { s = !s; render(); }
-function next() { i = (i + 1) % cards.length; s = false; render(); }
-function prev() { i = (i - 1 + cards.length) % cards.length; s = false; render(); }
-function shuffle() { cards.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
+  // SECRET 5-CLICK TITLE TRAP
+  let titleClickCount = 0;
+  let titleClickTimer = null;
 
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") { e.preventDefault(); flip(); }
-  if (e.key === "ArrowRight") next();
-  if (e.key === "ArrowLeft") prev();
-});
+  function handleTitleClick() {
+    titleClickCount++;
+    
+    // Reset count if clicks are separated by more than 1.5 seconds
+    clearTimeout(titleClickTimer);
+    titleClickTimer = setTimeout(() => {
+      titleClickCount = 0;
+    }, 1500);
 
-render();
+    if (titleClickCount >= 5) {
+      titleClickCount = 0;
+      const devHeader = document.getElementById('devHeader');
+      devHeader.classList.toggle('visible');
+    }
+  }
+
+  // Simple tab switcher for Study Materials (visual only)
+  function switchMaterialTab(btn) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const content = document.getElementById('materialsContent');
+    const texts = {
+      'Flashcards': 'Access student-curated reference guides, Wireshark packet analysis walk-throughs, Packet Tracer configurations, and cheatsheets shared across the cohort.',
+      'Practice Questions': 'Extra practice sets focused on specific CySA+ domains. Upload your own or browse shared JSON decks from classmates.',
+      'Notes & Guides': 'Cohort notes, mnemonic sheets, and condensed study guides for incident response, vulnerability management, and security operations.',
+      'External Resources': 'Links to official CompTIA objectives, free labs, recommended YouTube playlists, and community tools.'
+    };
+    content.textContent = texts[btn.textContent] || texts['Flashcards'];
+  }
+
+  // Initialize flags on load
+  applyFeatureFlags();
+  syncDevControlSelects();
+
+  // DEFAULT QUESTION SET DATA
+  const defaultDeck = [
+    { q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution", a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline." },
+    { q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking", a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors." },
+    { q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity", a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing." },
+    { q: "4. A network design routes corporate security policies directly through cloud edge elements, replacing standard physical firewalls. What architecture is this?\n\nA) SDN\nB) SASE\nC) Hybrid PKI\nD) Zero Trust", a: "Correct Answer: B\n\nRationale: SASE fuses software-defined routing with cloud-delivered edge security functions like firewalls and brokers." },
+    { q: "5. Which protocol establishes centralized cryptographic credentials to let users access multiple disparate company resources through one initial authentication?\n\nA) Federation\nB) SSO\nC) PAM\nD) MFA", a: "Correct Answer: B\n\nRationale: Single Sign-On (SSO) lets users authenticate once to access multiple separate systems securely." },
+    { q: "6. An engineer deploys a gateway utility to decrypt inbound traffic, inspect the files for active malware, and re-encrypt the data before internal delivery. What technique is this?\n\nA) SASE orchestration\nB) SSL inspection\nC) PKI certification management\nD) Data loss prevention", a: "Correct Answer: B\n\nRationale: SSL inspection decrypts encrypted network traffic at a gateway to scan for threats before re-encrypting it." },
+    { q: "7. While auditing network metrics, an analyst notes a sudden massive surge in point-to-point connections directly between client laptops. What is this?\n\nA) Authorized serverless compute calls\nB) Irregular peer-to-peer communication\nC) Application-related service interruption\nD) Network beaconing activity", a: "Correct Answer: B\n\nRationale: Direct workstation-to-workstation traffic breaks standard client-server models, signaling lateral movement." },
+    { q: "8. Which item stores low-level operating system configurations and is routinely monitored for malware persistence mechanisms like Run and RunOnce keys?\n\nA) File structures configuration locations\nB) System process hollowing nodes\nC) Windows Registry\nD) Hardware architecture firmware", a: "Correct Answer: C\n\nRationale: The Windows Registry houses system configurations; malware uses its Run keys to maintain persistence." },
+    { q: "9. A security tool automatically runs an endpoint isolation routine immediately after discovering a valid file hash signature. What platform handled this?\n\nA) SIEM\nB) SOAR\nC) EDR\nD) CASB", a: "Correct Answer: C\n\nRationale: Endpoint Detection and Response (EDR) agents actively record system behaviors and can automatically isolate individual hosts." },
+    { q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto", a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address." },
+    { q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings", a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions." },
+    { q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat", a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns." },
+    { q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment", a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence." },
+    { q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass", a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods." },
+    { q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering", a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators." },
+    { q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment", a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code." },
+    { q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing", a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations." },
+    { q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling", a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions." },
+    { q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices", a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines." },
+    { q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series", a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers." },
+    { q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS", a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields." },
+    { q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB", a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance." },
+    { q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction", a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability." },
+    { q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative", a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system." },
+    { q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability", a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands." },
+    { q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration", a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control." },
+    { q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow", a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files." },
+    { q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation", a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures." },
+    { q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint", a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately." },
+    { q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management", a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks." },
+    { q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide", a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish." },
+    { q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK", a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions." },
+    { q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis", a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court." },
+    { q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training", a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection." },
+    { q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan", a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation." },
+    { q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment", a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally." },
+    { q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation", a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines." },
+    { q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan", a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents." },
+    { q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition", a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans." },
+    { q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management", a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed." },
+    { q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure", a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation." },
+    { q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary", a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership." },
+    { q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)", a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified." },
+    { q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends", a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed." },
+    { q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan", a: "Correct Answer: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines." },
+    { q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing", a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards." },
+    { q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory", a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach." },
+    { q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels", a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs." },
+    { q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody", a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time." },
+    { q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation", a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds." }
+  ];
+
+  // STATE & REGISTRY
+  let customDecks = {};
+  let currentDeck = defaultDeck;
+  let i = 0, s = false;
+
+  // VIEW CONTROLLER
+  function showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+  }
+
+  function showHub() { showView('hubView'); }
+
+  function startDeck(deckKey, titleName) {
+    if (deckKey === 'default') {
+      currentDeck = defaultDeck;
+      document.getElementById('deckTitleDisplay').textContent = "CySA+ Flashcards";
+    } else if (customDecks[deckKey]) {
+      currentDeck = customDecks[deckKey].questions;
+      document.getElementById('deckTitleDisplay').textContent = titleName || "Custom Deck";
+    }
+    i = 0;
+    s = false;
+    render();
+    showView('studyView');
+  }
+
+  // FLASHCARD RENDER ENGINE
+  function render() {
+    if (!currentDeck || currentDeck.length === 0) return;
+    document.getElementById("title").textContent = s ? currentDeck[i].a : currentDeck[i].q;
+    document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
+    document.getElementById("qnum").textContent = i + 1;
+    document.getElementById("qtotal").textContent = currentDeck.length;
+    document.getElementById("bar").style.width = ((i + 1) / currentDeck.length * 100) + "%";
+    document.getElementById("card").scrollTop = 0;
+  }
+
+  function flip() { s = !s; render(); }
+  function next() { i = (i + 1) % currentDeck.length; s = false; render(); }
+  function prev() { i = (i - 1 + currentDeck.length) % currentDeck.length; s = false; render(); }
+  function shuffle() { currentDeck.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
+
+  // KEYBOARD CONTROLS
+  document.addEventListener("keydown", e => {
+    if (!document.getElementById('studyView').classList.contains('active')) return;
+    if (e.code === "Space") { e.preventDefault(); flip(); }
+    if (e.key === "ArrowRight") next();
+    if (e.key === "ArrowLeft") prev();
+  });
+
+  // UPLOAD HANDLER
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        const questions = Array.isArray(data) ? data : data.questions;
+        const title = data.title || file.name.replace('.json', '');
+        
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+          alert("Invalid format: JSON must contain an array of question objects.");
+          return;
+        }
+
+        const deckKey = 'deck_' + Date.now();
+        customDecks[deckKey] = { title, questions };
+
+        // Append new deck card to grid
+        const container = document.getElementById('decksContainer');
+        const cardHtml = `
+          <div class="deck-card">
+            <div>
+              <div class="deck-title">${title}</div>
+              <div class="deck-meta">${questions.length} Questions · User Uploaded</div>
+              <div class="deck-description">Custom imported question set.</div>
+            </div>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="startDeck('${deckKey}', '${title.replace(/'/g, "\\'")}')">Start Practice</button>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHtml);
+        alert(`Successfully imported "${title}" with ${questions.length} questions!`);
+      } catch (err) {
+        alert('Error parsing JSON file. Make sure it is valid JSON.');
+      }
+    };
+    reader.readAsText(file);
+  }
 </script>
+
 </body>
 </html>
