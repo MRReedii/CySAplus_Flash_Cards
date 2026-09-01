@@ -1,0 +1,81 @@
+name: Auto Release on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Bump version based on PR label
+        id: bump
+        run: |
+          LATEST="${{ steps.get_tag.outputs.latest }}"
+          # Strip leading 'v'
+          VERSION=${LATEST#v}
+          
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          LABELS="${{ join(github.event.pull_request.labels.*.name, ',') }}"
+
+          if echo "$LABELS" | grep -q "major"; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif echo "$LABELS" | grep -q "enhancement"; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Update CHANGELOG.md & Commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_TAG="${{ steps.bump.outputs.new_tag }}"
+          DATE=$(date +%Y-%m-%d)
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUM="${{ github.event.pull_request.number }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+
+          ENTRY="## [${NEW_TAG}] - ${DATE}\n- ${PR_TITLE} ([#${PR_NUM}](${PR_URL}))\n"
+          
+          # Create CHANGELOG.md if missing
+          [ ! -f CHANGELOG.md ] && echo "# Changelog" > CHANGELOG.md
+          
+          # Insert below header
+          sed -i "2i ${ENTRY}" CHANGELOG.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG for ${NEW_TAG} [skip ci]"
+          git push origin HEAD:main
+
+      - name: Create Git Tag & GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_TAG="${{ steps.bump.outputs.new_tag }}"
+          gh release create "${NEW_TAG}" \
+            --title "${NEW_TAG}" \
+            --notes "${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})"
