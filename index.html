@@ -266,52 +266,199 @@
     .upload-icon { font-size: 1.5rem; margin-bottom: 4px; }
     .upload-text { font-size: 0.82rem; opacity: 0.8; margin-bottom: 10px; }
 
-    /* Upload Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
+    /* Upload / Import Workspace */
+    #uploadView { width: min(960px, 100%); }
+
+    .upload-header {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
+
+    .upload-header .badge { white-space: nowrap; }
+
+    .upload-intro { padding: 24px; }
+    .upload-intro h1 { margin-bottom: 4px; }
+    .upload-intro p {
+      opacity: 0.72;
+      font-size: 0.86rem;
+      line-height: 1.5;
     }
-    .modal-content {
-      width: min(520px, 90%);
-      position: relative;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 24px;
-      backdrop-filter: blur(18px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    }
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 1.2rem;
+
+    .upload-workspace { display: grid; gap: 18px; }
+
+    .upload-box {
+      border: 2px dashed #00d4ff;
+      border-radius: 18px;
+      padding: 42px 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
       cursor: pointer;
-      opacity: 0.7;
-      z-index: 2;
-      padding: 4px;
-      line-height: 1;
+      margin-top: 0;
     }
-    .modal-close:hover { opacity: 1; }
+
+    .upload-box:hover,
+    .upload-box.drag-over {
+      background: rgba(0, 212, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-text { font-size: 0.88rem; opacity: 0.8; margin-bottom: 14px; }
+    .upload-filename { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; }
+
+    .import-section { padding: 22px; }
+
+    .import-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .import-section-header h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    .import-section-header span {
+      font-size: 0.72rem;
+      opacity: 0.6;
+    }
+
+    .import-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .import-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .import-field label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .import-field input,
+    .import-field select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #ffffff30;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.86rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .import-field select option { background: #08111f; color: #fff; }
+
+    .import-field input:focus,
+    .import-field select:focus { border-color: #00d4ff; }
+
+    .import-checks {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .import-check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.82rem;
+      opacity: 0.88;
+    }
+
+    .import-check input {
+      width: auto;
+      margin: 0;
+      accent-color: #00d4ff;
+    }
+
+    .import-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .import-stat {
+      padding: 12px;
+      border-radius: 12px;
+      background: #ffffff10;
+      border: 1px solid #ffffff18;
+      text-align: center;
+    }
+
+    .import-stat strong { display: block; font-size: 1.05rem; }
+    .import-stat span {
+      display: block;
+      font-size: 0.7rem;
+      opacity: 0.62;
+      margin-top: 2px;
+    }
+
+    .import-preview {
+      max-height: 280px;
+      overflow-y: auto;
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .preview-item {
+      background: #ffffff0d;
+      border: 1px solid #ffffff18;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .preview-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.72rem;
+      opacity: 0.65;
+    }
+
+    .import-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .import-actions .btn {
+      width: auto;
+      min-width: 150px;
+      margin-bottom: 0;
+    }
+
+    .import-status {
+      font-size: 0.78rem;
+      opacity: 0.72;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .import-grid { grid-template-columns: 1fr; }
+      .import-stats { grid-template-columns: 1fr; }
+      .import-actions { flex-direction: column; }
+      .import-actions .btn { width: 100%; }
+    }
 
     /* Footer Inline Link */
     .footer-text {
@@ -690,30 +837,128 @@
     </div>
   </div>
 
-  <!-- UPLOAD MODAL -->
-  <div id="uploadModal" class="modal-overlay" onclick="closeUploadModal(event)">
-    <div class="glass-panel modal-content" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeUploadModal()">✕</button>
-      <div class="section-title" style="padding-right: 28px;">
-        <span>📤 Upload Question Set</span>
-        <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">ACCEPTS .JSON</span>
+  <!-- UPLOAD / IMPORT WORKSPACE -->
+  <div id="uploadView" class="view">
+    <div class="upload-header">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="showHub()">⬅ Back to Hub</button>
+      <div class="badge">📤 Question Set Import</div>
+    </div>
+
+    <div class="glass-panel upload-intro">
+      <h1>📤 Upload Question Set</h1>
+      <p>Import a JSON question set, review what was detected, and refine the data before adding it to your study hub.</p>
+    </div>
+
+    <div class="upload-workspace">
+      <div class="glass-panel">
+        <div class="section-title">
+          <span>1. Select Question Set</span>
+          <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">JSON ONLY</span>
+        </div>
+
+        <div class="upload-box" id="uploadDropZone"
+             onclick="document.getElementById('jsonFileInput').click()">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">Drag & drop your question set JSON here, or click to browse</div>
+          <button class="btn btn-secondary" type="button" style="width: auto; margin-bottom: 0;"
+                  onclick="event.stopPropagation(); document.getElementById('jsonFileInput').click()">
+            Select JSON File
+          </button>
+          <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+          <div id="uploadFilename" class="upload-filename"></div>
+        </div>
       </div>
 
-      <!-- Inside your Upload Question Set Modal -->
-      <div class="upload-options" style="margin: 1rem 0; text-align: left;">
-        <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
-          <input type="checkbox" id="chkOffline" checked /> Save locally for offline use
-        </label>
-        <label style="display: block; cursor: pointer;">
-          <input type="checkbox" id="chkPublic" /> Make public (Publish to IPFS via Pinata)
-        </label>
-      </div>
+      <div id="importReview" class="glass-panel import-section hidden">
+        <div class="import-section-header">
+          <h3>2. Review Imported Data</h3>
+          <span id="importStatusLabel">READY FOR REVIEW</span>
+        </div>
 
-      <div class="upload-box" onclick="document.getElementById('jsonFileInput').click()">
-        <div class="upload-icon">📄</div>
-        <div class="upload-text">Drag & drop your question set JSON file here, or click to browse</div>
-        <button class="btn btn-secondary" type="button" style="width: auto; margin-bottom: 0;">Select JSON File</button>
-        <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+        <div class="import-stats">
+          <div class="import-stat">
+            <strong id="importQuestionCount">0</strong>
+            <span>Questions</span>
+          </div>
+          <div class="import-stat">
+            <strong id="importCategoryCount">—</strong>
+            <span>Categories</span>
+          </div>
+          <div class="import-stat">
+            <strong id="importFormatStatus">✓</strong>
+            <span>JSON Format</span>
+          </div>
+        </div>
+
+        <div class="import-grid" style="margin-top: 16px;">
+          <div class="import-field">
+            <label for="importDeckName">Deck Name</label>
+            <input id="importDeckName" type="text" placeholder="Question Set Name">
+          </div>
+
+          <div class="import-field">
+            <label for="importCategory">Category</label>
+            <select id="importCategory">
+              <option value="auto">Auto Detect</option>
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="networking">Networking</option>
+              <option value="threat-intelligence">Threat Intelligence</option>
+              <option value="incident-response">Incident Response</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="import-field">
+            <label for="importDifficulty">Difficulty</label>
+            <select id="importDifficulty">
+              <option value="original">Keep Original</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div class="import-field">
+            <label for="importQuestionType">Question Type</label>
+            <select id="importQuestionType">
+              <option value="auto">Auto Detect</option>
+              <option value="multiple-choice">Multiple Choice</option>
+              <option value="true-false">True / False</option>
+              <option value="open-ended">Open Ended</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="import-checks">
+          <label class="import-check">
+            <input type="checkbox" id="chkOffline" checked>
+            <span>Save locally for offline use</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkPublic">
+            <span>Make public — publish to IPFS via Pinata</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkValidate" checked>
+            <span>Validate questions before importing</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkPreserveMetadata" checked>
+            <span>Preserve original metadata</span>
+          </label>
+        </div>
+
+        <div class="section-title" style="margin-top: 22px;">
+          <span>Preview</span>
+          <span id="previewCount">0 shown</span>
+        </div>
+        <div id="importPreview" class="import-preview"></div>
+        <div id="importStatus" class="import-status"></div>
+
+        <div class="import-actions" style="margin-top: 18px;">
+          <button class="btn btn-secondary" onclick="resetImportView()">Clear & Start Over</button>
+          <button class="btn btn-primary" onclick="confirmImport()">Import Question Set</button>
+        </div>
       </div>
     </div>
   </div>
@@ -907,15 +1152,34 @@
     content.textContent = texts[btn.textContent] || texts['Flashcards'];
   }
 
-  // MODAL CONTROLS
+  // UPLOAD WORKSPACE NAVIGATION
   function openUploadModal() {
-    document.getElementById('uploadModal').classList.add('active');
+    showView('uploadView');
+    resetImportView();
   }
 
-  function closeUploadModal(event) {
-    if (!event || event.target.id === 'uploadModal' || event.target.classList.contains('modal-close')) {
-      document.getElementById('uploadModal').classList.remove('active');
-    }
+  // Compatibility helper for existing callers.
+  function closeUploadModal() {
+    showHub();
+  }
+
+  function resetImportView() {
+    const review = document.getElementById('importReview');
+    const input = document.getElementById('jsonFileInput');
+
+    if (review) review.classList.add('hidden');
+    if (input) input.value = '';
+
+    document.getElementById('uploadFilename').textContent = '';
+    document.getElementById('importPreview').innerHTML = '';
+    document.getElementById('importQuestionCount').textContent = '0';
+    document.getElementById('importCategoryCount').textContent = '—';
+    document.getElementById('importFormatStatus').textContent = '✓';
+    document.getElementById('previewCount').textContent = '0 shown';
+    document.getElementById('importStatus').textContent = '';
+    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
+
+    importedQuestionSet = null;
   }
 
   // SUPABASE CONFIGURATION
@@ -1051,55 +1315,156 @@
   function prev() { i = (i - 1 + currentDeck.length) % currentDeck.length; s = false; render(); }
   function shuffle() { currentDeck.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
 
-  // UPLOAD HANDLER
+  // UPLOAD / REVIEW / IMPORT WORKFLOW
+  let importedQuestionSet = null;
+
   function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const saveOffline = document.getElementById('chkOffline')?.checked ?? true;
-    const savePublic = document.getElementById('chkPublic')?.checked ?? false;
+    document.getElementById('uploadFilename').textContent = `Selected: ${file.name}`;
 
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
         const questions = Array.isArray(data) ? data : data.questions;
-        const title = data.title || file.name.replace('.json', '');
+        const title = data.title || file.name.replace(/\.json$/i, '');
 
         if (!questions || !Array.isArray(questions) || questions.length === 0) {
           toast("Invalid JSON question format");
           return;
         }
 
-        const deckKey = 'deck_' + Date.now();
-        customDecks[deckKey] = { title, questions };
-
-        // Render deck in current session DOM
-        renderDeckCard(deckKey, title, questions.length);
-
-        // Handle local offline storage
-        if (saveOffline) {
-          localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
-        }
-
-        // Handle public IPFS upload via Pinata / Vercel API
-        if (savePublic) {
-          toast("Publishing set to IPFS...");
-          const ipfsResult = await pinataIpfsUpload(data);
-          if (ipfsResult && ipfsResult.IpfsHash) {
-            toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
-          }
-        } else {
-          toast(`Imported "${title}"`);
-        }
-
-        closeUploadModal();
+        importedQuestionSet = { raw: data, title, questions, filename: file.name };
+        prepareImportReview();
+        toast(`Loaded "${title}" — review before importing`);
       } catch (err) {
         console.error(err);
-        toast('Error parsing or processing JSON file');
+        toast('Error parsing JSON file');
       }
     };
+
     reader.readAsText(file);
+  }
+
+  function prepareImportReview() {
+    if (!importedQuestionSet) return;
+
+    const { title, questions } = importedQuestionSet;
+    document.getElementById('importReview').classList.remove('hidden');
+    document.getElementById('importDeckName').value = title;
+    document.getElementById('importQuestionCount').textContent = questions.length;
+
+    const categories = new Set(
+      questions.map(q => typeof q === 'object' ? (q.category || q.topic || q.domain) : null).filter(Boolean)
+    );
+    document.getElementById('importCategoryCount').textContent = categories.size || '—';
+    document.getElementById('importFormatStatus').textContent = '✓ Valid';
+    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
+
+    const preview = document.getElementById('importPreview');
+    const previewQuestions = questions.slice(0, 5);
+
+    preview.innerHTML = previewQuestions.map((q, index) => {
+      const question = typeof q === 'string'
+        ? q
+        : (q.q || q.question || q.prompt || JSON.stringify(q));
+
+      return `
+        <div class="preview-item">
+          <strong>Question ${index + 1}</strong>
+          ${escapeHtml(String(question)).slice(0, 500)}
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('previewCount').textContent =
+      `${previewQuestions.length} of ${questions.length} shown`;
+
+    document.getElementById('importStatus').textContent =
+      'Review the options above before importing. More refinement controls can be added here without changing the Hub.';
+
+    document.getElementById('importReview').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
+  function confirmImport() {
+    if (!importedQuestionSet) {
+      toast('Select a JSON question set first');
+      return;
+    }
+
+    const saveOffline = document.getElementById('chkOffline').checked;
+    const savePublic = document.getElementById('chkPublic').checked;
+    const validate = document.getElementById('chkValidate').checked;
+
+    const title =
+      document.getElementById('importDeckName').value.trim() ||
+      importedQuestionSet.title;
+
+    const questions = importedQuestionSet.questions;
+
+    if (validate) {
+      const invalid = questions.filter(q => {
+        if (typeof q === 'string') return !q.trim();
+        return !(q.q || q.question || q.prompt);
+      });
+
+      if (invalid.length) {
+        document.getElementById('importStatus').textContent =
+          `Validation found ${invalid.length} question(s) without a recognizable question field.`;
+        document.getElementById('importStatusLabel').textContent = 'VALIDATION WARNING';
+        toast('Validation found incomplete questions');
+        return;
+      }
+    }
+
+    const deckKey = 'deck_' + Date.now();
+    customDecks[deckKey] = { title, questions };
+
+    if (saveOffline) {
+      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
+    }
+
+    if (savePublic) {
+      publishImportedDeck(importedQuestionSet.raw, title, deckKey);
+    } else {
+      renderDeckCard(deckKey, title, questions.length);
+      toast(`Imported "${title}"`);
+      showHub();
+    }
+  }
+
+  async function publishImportedDeck(data, title, deckKey) {
+    try {
+      toast("Publishing set to IPFS...");
+      const ipfsResult = await pinataIpfsUpload(data);
+
+      if (ipfsResult && ipfsResult.IpfsHash) {
+        toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
+      }
+
+      renderDeckCard(deckKey, title, data.questions?.length || 0);
+      showHub();
+    } catch (err) {
+      console.error(err);
+      toast("Imported locally, but IPFS publishing failed");
+      renderDeckCard(deckKey, title, data.questions?.length || 0);
+      showHub();
+    }
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
   }
 
   // UTILITY HELPERS
@@ -1128,14 +1493,50 @@
 
   // KEYBOARD CONTROLS
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
-      closeUploadModal();
+    if (e.key === "Escape" && document.getElementById('uploadView').classList.contains('active')) {
+      showHub();
+      return;
     }
     if (!document.getElementById('studyView').classList.contains('active')) return;
     if (e.code === "Space") { e.preventDefault(); flip(); }
     if (e.key === "ArrowRight") next();
     if (e.key === "ArrowLeft") prev();
   });
+
+  // DRAG & DROP FOR QUESTION SET IMPORT
+  const uploadDropZone = document.getElementById('uploadDropZone');
+
+  if (uploadDropZone) {
+    ['dragenter', 'dragover'].forEach(name => {
+      uploadDropZone.addEventListener(name, event => {
+        event.preventDefault();
+        uploadDropZone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+      uploadDropZone.addEventListener(name, event => {
+        event.preventDefault();
+        uploadDropZone.classList.remove('drag-over');
+      });
+    });
+
+    uploadDropZone.addEventListener('drop', event => {
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        toast('Please drop a JSON file');
+        return;
+      }
+
+      const input = document.getElementById('jsonFileInput');
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+      handleFileUpload({ target: input });
+    });
+  }
 
   // INITIALIZATION
   loadDefaultDeckFromIPFS();
