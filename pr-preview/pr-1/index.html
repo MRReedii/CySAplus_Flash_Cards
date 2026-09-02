@@ -58,6 +58,8 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
+      user-select: none;
     }
 
     /* Sleek Mini Status Badge */
@@ -552,7 +554,7 @@
 
     <!-- Compact Floating Top Navigation Bar -->
     <div class="app-topbar">
-      <div class="user-pill">
+      <div class="user-pill" id="userPill" onclick="handleUserPillClick()">
         <span style="opacity: 0.6;">👤</span>
         <span id="user-display">Guest Mode</span>
       </div>
@@ -591,7 +593,7 @@
         <div class="deck-card">
           <div>
             <div class="deck-title">🛡 CySA+ Comprehensive Deck</div>
-            <div class="deck-meta">50 Questions · Official Cohort Set</div>
+            <div class="deck-meta" id="defaultDeckMeta">Loading Deck... · Official Cohort Set</div>
             <div class="deck-description">Covers incident response, beaconing, SASE, EDR, threat intelligence, and vulnerability management.</div>
           </div>
           <button class="btn btn-primary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('default')">Start Practice</button>
@@ -696,6 +698,17 @@
         <span>📤 Upload Question Set</span>
         <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">ACCEPTS .JSON</span>
       </div>
+
+      <!-- Inside your Upload Question Set Modal -->
+      <div class="upload-options" style="margin: 1rem 0; text-align: left;">
+        <label style="display: block; margin-bottom: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="chkOffline" checked /> Save locally for offline use
+        </label>
+        <label style="display: block; cursor: pointer;">
+          <input type="checkbox" id="chkPublic" /> Make public (Publish to IPFS via Pinata)
+        </label>
+      </div>
+
       <div class="upload-box" onclick="document.getElementById('jsonFileInput').click()">
         <div class="upload-icon">📄</div>
         <div class="upload-text">Drag & drop your question set JSON file here, or click to browse</div>
@@ -732,6 +745,36 @@
 <div id="toast"></div>
 
 <script>
+  // VERCEL API ENDPOINT FOR PINATA IPFS UPLOAD
+  const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
+
+  async function pinataIpfsUpload(fileData) {
+    try {
+      toast("Uploading to Pinata IPFS via Vercel...");
+      const response = await fetch(VERCEL_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fileData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      toast("Successfully uploaded to IPFS!");
+      return result;
+    } catch (err) {
+      toast("Pinata IPFS upload failed");
+      console.error("Error uploading to Vercel Pinata endpoint:", err);
+      throw err;
+    }
+  }
+
+  // DEFAULT IPFS CONFIGURATION
+  const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
+  const IPFS_GATEWAY = "https://harlequin-bitter-booby-228.mypinata.cloud/ipfs/";
+
   // FEATURE FLAGS CONFIGURATION
   const FEATURE_FLAGS = {
     ENABLE_AUTH: false,
@@ -793,6 +836,60 @@
     if (titleClickCount >= 5) {
       titleClickCount = 0;
       document.getElementById('devHeader').classList.toggle('visible');
+    }
+  }
+
+  // USER MODE TRIPLE-CLICK HANDLER FOR IPFS / REMOTE JSON
+  let userPillClicks = 0;
+  let userPillTimer = null;
+
+  function handleUserPillClick() {
+    userPillClicks++;
+    clearTimeout(userPillTimer);
+    userPillTimer = setTimeout(() => { userPillClicks = 0; }, 1200);
+
+    if (userPillClicks >= 3) {
+      userPillClicks = 0;
+      promptIpfsSource();
+    }
+  }
+
+  async function promptIpfsSource() {
+    const input = prompt("Enter an IPFS CID or full JSON URL (leave blank to clear custom decks):");
+    if (input === null) return;
+
+    let targetUrl = input.trim();
+    if (!targetUrl) {
+      toast("Resetting to default questions");
+      return;
+    }
+
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+      targetUrl = `${IPFS_GATEWAY}${targetUrl}`;
+    }
+
+    try {
+      toast("Fetching IPFS deck...");
+      const res = await fetch(targetUrl);
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const data = await res.json();
+
+      const questions = Array.isArray(data) ? data : data.questions;
+      const title = data.title || "IPFS Imported Deck";
+
+      if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        toast("Invalid deck schema");
+        return;
+      }
+
+      const deckKey = 'ipfs_' + Date.now();
+      customDecks[deckKey] = { title, questions };
+
+      renderDeckCard(deckKey, title, questions.length);
+      toast(`Loaded IPFS set: ${title}`);
+    } catch (err) {
+      toast("Failed to fetch IPFS payload");
+      console.error(err);
     }
   }
 
@@ -880,16 +977,51 @@
     btn.addEventListener('click', () => oauthLogin(btn.dataset.provider));
   });
 
-  // FLASHCARD ENGINE & DEFAULT DATA
-  const defaultDeck = [
+  // FALLBACK BASELINE DATA
+  const fallbackDeck = [
     { q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution", a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline." },
     { q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking", a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors." },
     { q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity", a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing." }
   ];
 
+  let defaultDeck = fallbackDeck;
   let customDecks = {};
   let currentDeck = defaultDeck;
   let i = 0, s = false;
+
+  async function loadDefaultDeckFromIPFS() {
+    const metaEl = document.getElementById('defaultDeckMeta');
+    try {
+      const res = await fetch(`${IPFS_GATEWAY}${DEFAULT_DECK_CID}`);
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const data = await res.json();
+      
+      const questions = Array.isArray(data) ? data : data.questions;
+      if (questions && Array.isArray(questions) && questions.length > 0) {
+        defaultDeck = questions;
+        if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official IPFS Set`;
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to load default deck from IPFS, using fallback dataset.", err);
+    }
+    if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
+  }
+
+  function renderDeckCard(deckKey, title, count) {
+    const container = document.getElementById('decksContainer');
+    const cardHtml = `
+      <div class="deck-card">
+        <div>
+          <div class="deck-title">${title}</div>
+          <div class="deck-meta">${count} Questions · User Uploaded</div>
+          <div class="deck-description">Custom imported question set.</div>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('${deckKey}', '${title.replace(/'/g, "\\'")}')">Start Practice</button>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', cardHtml);
+  }
 
   function startDeck(deckKey, titleName) {
     if (deckKey === 'default') {
@@ -924,13 +1056,16 @@
     const file = event.target.files[0];
     if (!file) return;
 
+    const saveOffline = document.getElementById('chkOffline')?.checked ?? true;
+    const savePublic = document.getElementById('chkPublic')?.checked ?? false;
+
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
       try {
         const data = JSON.parse(e.target.result);
         const questions = Array.isArray(data) ? data : data.questions;
         const title = data.title || file.name.replace('.json', '');
-        
+
         if (!questions || !Array.isArray(questions) || questions.length === 0) {
           toast("Invalid JSON question format");
           return;
@@ -939,22 +1074,29 @@
         const deckKey = 'deck_' + Date.now();
         customDecks[deckKey] = { title, questions };
 
-        const container = document.getElementById('decksContainer');
-        const cardHtml = `
-          <div class="deck-card">
-            <div>
-              <div class="deck-title">${title}</div>
-              <div class="deck-meta">${questions.length} Questions · User Uploaded</div>
-              <div class="deck-description">Custom imported question set.</div>
-            </div>
-            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('${deckKey}', '${title.replace(/'/g, "\\'")}')">Start Practice</button>
-          </div>
-        `;
-        container.insertAdjacentHTML('beforeend', cardHtml);
-        toast(`Imported "${title}"`);
+        // Render deck in current session DOM
+        renderDeckCard(deckKey, title, questions.length);
+
+        // Handle local offline storage
+        if (saveOffline) {
+          localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
+        }
+
+        // Handle public IPFS upload via Pinata / Vercel API
+        if (savePublic) {
+          toast("Publishing set to IPFS...");
+          const ipfsResult = await pinataIpfsUpload(data);
+          if (ipfsResult && ipfsResult.IpfsHash) {
+            toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
+          }
+        } else {
+          toast(`Imported "${title}"`);
+        }
+
         closeUploadModal();
       } catch (err) {
-        toast('Error parsing JSON file');
+        console.error(err);
+        toast('Error parsing or processing JSON file');
       }
     };
     reader.readAsText(file);
@@ -996,6 +1138,7 @@
   });
 
   // INITIALIZATION
+  loadDefaultDeckFromIPFS();
   applyFeatureFlags();
   syncDevControlSelects();
   updateNetworkBadge();
