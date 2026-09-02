@@ -248,17 +248,90 @@
     .deck-description { font-size: 0.82rem; opacity: 0.8; line-height: 1.4; margin-bottom: 14px; }
 
     .upload-box {
-      border: 2px dashed #ffffff40;
+      border: 2px dashed #00d4ff;
       border-radius: 16px;
-      padding: 18px;
+      padding: 28px 20px;
       text-align: center;
-      background: #ffffff0a;
-      transition: 0.2s;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
       cursor: pointer;
+      margin-top: 16px;
     }
-    .upload-box:hover { border-color: #00d4ff; background: #ffffff14; }
+    .upload-box:hover {
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.08);
+    }
     .upload-icon { font-size: 1.5rem; margin-bottom: 4px; }
     .upload-text { font-size: 0.82rem; opacity: 0.8; margin-bottom: 10px; }
+
+    /* Upload Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      width: min(520px, 90%);
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.7;
+      z-index: 2;
+      padding: 4px;
+      line-height: 1;
+    }
+    .modal-close:hover { opacity: 1; }
+
+    /* Footer Inline Link */
+    .footer-text {
+      text-align: center;
+      font-size: 0.75rem;
+      margin-top: 12px;
+      opacity: 0.8;
+    }
+    .footer-text span.footer-base {
+      opacity: 0.6;
+    }
+    .upload-link {
+      color: #00d4ff;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 4px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    .upload-link:hover {
+      color: #fff;
+    }
 
     /* Continue Studying Card */
     .continue-card {
@@ -378,7 +451,6 @@
       box-shadow: 0 10px 30px #0008;
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
-    .footer-text { text-align: center; opacity: 0.5; font-size: 0.75rem; margin-top: 6px; }
 
     @media (max-width: 600px) {
       .continue-card { flex-direction: column; align-items: stretch; }
@@ -527,20 +599,6 @@
       </div>
     </div>
 
-    <!-- UPLOAD SECTION (Permanently Enabled) -->
-    <div class="glass-panel">
-      <div class="section-title">
-        <span>📤 Upload Question Set</span>
-        <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">Accepts .json</span>
-      </div>
-      <div class="upload-box" onclick="document.getElementById('jsonFileInput').click()">
-        <div class="upload-icon">📄</div>
-        <div class="upload-text">Drag & drop your question set JSON file here, or click to browse</div>
-        <button class="btn btn-secondary" type="button" style="width: auto; margin-bottom: 0;">Select JSON File</button>
-        <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
-      </div>
-    </div>
-
     <!-- FEATURE: Browse By Topic -->
     <div class="feature-in-dev feature-topics">
       <div class="section-title">🎯 Browse by Topic</div>
@@ -604,7 +662,7 @@
               <div class="activity-time">yesterday</div>
             </div>
           </div>
-          <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; margin-bottom: 0;" onclick="document.getElementById('jsonFileInput').click()">+ Share a Study Set</button>
+          <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; margin-bottom: 0;" onclick="openUploadModal()">+ Share a Study Set</button>
         </div>
       </div>
     </div>
@@ -623,7 +681,28 @@
       </div>
     </div>
 
-    <div class="footer-text">Built by students, for students.</div>
+    <!-- FOOTER WITH INLINE UPLOAD TRIGGER -->
+    <div class="footer-text">
+      <span class="footer-base">Built by students, for students.</span> 
+      <span class="upload-link" onclick="openUploadModal()">Upload a Question Set Now</span>
+    </div>
+  </div>
+
+  <!-- UPLOAD MODAL -->
+  <div id="uploadModal" class="modal-overlay" onclick="closeUploadModal(event)">
+    <div class="glass-panel modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeUploadModal()">✕</button>
+      <div class="section-title" style="padding-right: 28px;">
+        <span>📤 Upload Question Set</span>
+        <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">ACCEPTS .JSON</span>
+      </div>
+      <div class="upload-box" onclick="document.getElementById('jsonFileInput').click()">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Drag & drop your question set JSON file here, or click to browse</div>
+        <button class="btn btn-secondary" type="button" style="width: auto; margin-bottom: 0;">Select JSON File</button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+      </div>
+    </div>
   </div>
 
   <!-- STUDY VIEW -->
@@ -729,6 +808,17 @@
       'External Resources': 'Links to official CompTIA objectives, free labs, recommended YouTube playlists, and community tools.'
     };
     content.textContent = texts[btn.textContent] || texts['Flashcards'];
+  }
+
+  // MODAL CONTROLS
+  function openUploadModal() {
+    document.getElementById('uploadModal').classList.add('active');
+  }
+
+  function closeUploadModal(event) {
+    if (!event || event.target.id === 'uploadModal' || event.target.classList.contains('modal-close')) {
+      document.getElementById('uploadModal').classList.remove('active');
+    }
   }
 
   // SUPABASE CONFIGURATION
@@ -862,6 +952,7 @@
         `;
         container.insertAdjacentHTML('beforeend', cardHtml);
         toast(`Imported "${title}"`);
+        closeUploadModal();
       } catch (err) {
         toast('Error parsing JSON file');
       }
@@ -895,6 +986,9 @@
 
   // KEYBOARD CONTROLS
   document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      closeUploadModal();
+    }
     if (!document.getElementById('studyView').classList.contains('active')) return;
     if (e.code === "Space") { e.preventDefault(); flip(); }
     if (e.key === "ArrowRight") next();
