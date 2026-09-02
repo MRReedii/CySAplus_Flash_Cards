@@ -1,0 +1,705 @@
+CompTIA Security+ SY0-701 Practice Test Review
+
+======================================================================
+Q5. A company is preparing for a SOC 2 Type II audit. Select TWO characteristics that distinguish this audit type from SOC 2 Type I. (Select two answers)
+Choices:
+  A. Covers a minimum period of six months
+  B. Evaluates the design suitability of controls at a point in time
+  C. Provides opinion on control design only
+  D. Tests the operating effectiveness of controls over time
+  E. Requires evidence of control operation throughout the review period
+Correct Answers: D, E
+----------------------------------------------------------------------
+Q6. A company's risk assessment identifies a threat with an asset value of $150,000, exposure factor of 40%, and annualized rate of occurrence of 0.25. What is the Annualized Loss Expectancy (ALE)? (Single choice)
+Choices:
+  A. D. $22,500
+  B. C. $37,500
+  C. B. $60,000
+  D. A. $15,000
+Correct Answer: D (A. $15,000)
+----------------------------------------------------------------------
+Q7. An organization's SSO implementation uses OAuth 2.0 for authorization but users still need separate credentials for each application. Which component is MISSING from this implementation? (Single choice)
+Choices:
+  A. C. Resource Owner
+  B. A. Identity Provider
+  C. D. User Agent
+  D. B. Authorization Server
+Correct Answer: B (A. Identity Provider)
+----------------------------------------------------------------------
+Q8. Which TWO factors are essential components when calculating quantitative risk using the ALE formula? (Choose TWO)
+Choices:
+  A. C. Exposure Factor (EF)
+  B. A. Asset Value (AV)
+  C. D. Employee security awareness scores
+  D. B. Threat intelligence feeds
+  E. E. Annualized Rate of Occurrence (ARO)
+Correct Answers: A, B (Exposure Factor & Asset Value)
+----------------------------------------------------------------------
+Q9. During an incident response, the team identifies malware on a critical server. According to PICERL, which step should occur IMMEDIATELY AFTER containment? (Single choice)
+Choices:
+  A. C. Lessons Learned
+  B. D. Preparation
+  C. A. Eradication
+  D. B. Recovery
+Correct Answer: C (A. Eradication)
+----------------------------------------------------------------------
+Q10. After a ransomware infection at a manufacturing company, the security team discovers the malware established persistent access through multiple methods. Which TWO techniques would most likely provide ransomware with persistent backdoor access? (Choose TWO)
+Choices:
+  A. Scheduled tasks running encrypted payloads
+  B. SSH keys stored in authorized_keys
+  C. Network segmentation rules
+  D. Temporary browser cache files
+  E. Modified Windows Registry Run keys
+Correct Answers: A, E
+----------------------------------------------------------------------
+Q11. A security team is implementing session recording for privileged access. Which TWO benefits does this provide for security operations? (Choose TWO)
+Choices:
+  A. Reduced bandwidth consumption for remote access
+  B. Real-time blocking of malicious commands
+  C. Accountability for administrative actions
+  D. Automated patching of vulnerable systems
+  E. Forensic analysis of security incidents
+Correct Answers: C, E
+----------------------------------------------------------------------
+Q12. An attacker intercepts the authentication token of a user after login and reuses it to gain access later, without knowing the password. This is a: (Single choice)
+Choices:
+  A. D. Session hijacking
+  B. B. Credential stuffing
+  C. C. Replay attack
+  D. A. Pass-the-hash attack
+Correct Answer: C (C. Replay attack)
+----------------------------------------------------------------------
+Q13. A security team needs to implement mobile device management for a BYOD environment. Which TWO capabilities should be prioritized to maintain security while respecting employee privacy? (Choose TWO)
+Choices:
+  A. Personal photo gallery monitoring
+  B. Corporate application containerization
+  C. Full device remote wipe capability
+  D. Certificate-based authentication push
+  E. Personal text message content scanning
+Correct Answers: B, D
+----------------------------------------------------------------------
+Q14. During a forensic investigation, legal counsel informs the security team that they must preserve all potentially relevant data for upcoming litigation. Which legal concept requires the organization to maintain and protect this evidence from alteration or destruction? (Single choice)
+Choices:
+  A. Order of volatility
+  B. Legal hold
+  C. Chain of custody
+  D. Data retention policy
+Correct Answer: B (B. Legal hold)
+----------------------------------------------------------------------
+Q15. Ransomware encrypts files using a symmetric encryption key, which is then encrypted with an asymmetric public key and sent to a command and control server. What is the PRIMARY reason for this hybrid approach? (Single choice)
+Choices:
+  A. To securely exchange the decryption key only with the attacker
+  B. To allow multiple victims to use the same decryption key
+  C. To bypass signature-based antivirus detection
+  D. To enable faster encryption of large files
+Correct Answer: A (To securely exchange the decryption key only with the attacker)
+----------------------------------------------------------------------
+Q16. During a security assessment, an analyst discovers that internal workstations can directly access the internet without any author filtering. Management wants to implement a solution that can inspect all outbound web traffic, enforce acceptable use policies, and cache frequently accessed content. Which firewall architecture would BEST meet these requirements? (Single choice)
+Choices:
+  A. Stateful inspection firewall
+  B. Proxy firewall
+  C. Stateless packet filter
+  D. Next-generation firewall (NGFW)
+Correct Answer: B (B. Proxy firewall)
+----------------------------------------------------------------------
+Q17. A company wants to implement the BEST technical controls to prevent malware infections from email attachments. Which TWO controls should be implemented? (Choose TWO)
+Choices:
+  A. User security awareness training
+  B. Network segmentation
+  C. Antivirus on endpoints
+  D. Email attachment filtering
+  E. Application whitelisting
+Correct Answers: C, D
+----------------------------------------------------------------------
+Q18. Which cloud deployment model provides dedicated infrastructure for a single organization, hosted either on-premises or by a third-party provider? (Single choice)
+Choices:
+  A. Public cloud
+  B. Private cloud
+  C. Community cloud
+  D. Hybrid cloud
+Correct Answer: B (B. Private cloud)
+----------------------------------------------------------------------
+Q19. A security team is configuring their SIEM to detect potential insider threats. Which capability distinguishes SIEM from SOAR in this context? (Single choice)
+Choices:
+  A. Log collection and normalization
+  B. Correlation of events across systems
+  C. Real-time alerting and dashboarding
+  D. Automated incident response workflows
+Correct Answer: B (B. Correlation of events across systems)
+----------------------------------------------------------------------
+Q20. A security team is implementing HIPS on critical servers. Which TWO capabilities distinguish HIPS from HIDS? (Choose TWO)
+Choices:
+  A. Log generation for security events
+  B. Real-time monitoring of system activities
+  C. Alerting security personnel
+  D. Prevention of policy violations
+  E. Automated blocking of suspicious behavior
+Correct Answers: D, E
+----------------------------------------------------------------------
+Q21. During an incident response investigation, the team identifies that an attacker has established persistence on a compromised web server. According to the PICERL framework, which phase involves removing the attacker's backdoor and restoring the system to a clean state? (Single choice)
+Choices:
+  A. Eradication
+  B. Containment
+  C. Recovery
+  D. Lessons Learned
+Correct Answer: A (B. Eradication)
+----------------------------------------------------------------------
+Q22. What is the purpose of a jump server (bastion host) in a secure network architecture? (Single choice)
+Choices:
+  A. To serve as the primary DNS server for the internal network
+  B. To provide backup internet connectivity during primary ISP failure
+  C. To host web applications facing public-facing services
+  D. To act as an intermediary for managing access to systems in a restricted zone
+Correct Answer: D (B. To act as an intermediary for managing access to systems in a restricted zone)
+----------------------------------------------------------------------
+Q23. During a ransomware incident response, which action should be performed FIRST to contain the infection? (Single choice)
+Choices:
+  A. Isolate infected systems from the network
+  B. Begin restoring from backups
+  C. Notify law enforcement
+  D. Analyze the ransom note for clues
+Correct Answer: A (A. Isolate infected systems from the network)
+----------------------------------------------------------------------
+Q24. Which of the following is a key security risk introduced by microservices architecture compared to monolithic applications? (Single choice)
+Choices:
+  A. Inability to patch patches to individual services independently
+  B. Reduced code complexity making vulnerabilities easier to exploit
+  C. Lack of any API layer between services
+  D. Expanded attack surface due to numerous inter-service API communications
+Correct Answer: D (D. Expanded attack surface due to numerous inter-service API communications)
+----------------------------------------------------------------------
+Q25. A honeypot in network security is: (Single choice)
+Choices:
+  A. An encrypted vault for storing API keys and secrets
+  B. A network proxy that anonymizes user traffic
+  C. A backup server that stores redundant copies of critical data
+  D. A decoy system designed to attract and detect attackers
+Correct Answer: D (B. A decoy system designed to attract and detect attackers)
+----------------------------------------------------------------------
+Q26. Zero Trust Architecture operates on which core principle? (Single choice)
+Choices:
+  A. Never trust, always verify - no user or device is trusted without continuous authentication and authorization
+  B. Trust is established once at login and maintained throughout the session
+  C. Physical network location determines the level of trust assigned
+  D. Trust but verify - users inside the perimeter are trusted by default
+Correct Answer: A (B. Never trust, always verify...)
+----------------------------------------------------------------------
+Q27. An employee receives a text message claiming to be from their bank, asking them to call a provided number immediately to verify suspicious account activity. Which type of social engineering attack is this? (Single choice)
+Choices:
+  A. Whaling
+  B. Vishing
+  C. Phishing
+  D. Smishing
+Correct Answer: D (B. Smishing)
+----------------------------------------------------------------------
+Q28. Which of the following BEST describes the function of a digital signature? (Single choice)
+Choices:
+  A. Provides authentication and non-repudiation for a message
+  B. Encrypts the message to ensure confidentiality
+  C. Generates a symmetric key for bulk data encryption
+  D. Hashes the public key and attaches it to prevent tampering
+Correct Answer: A (B. Provides authentication and non-repudiation for a message)
+----------------------------------------------------------------------
+Q29. A screened host architecture is being implemented where a single firewall protects both the DMZ and internal network. Which security concern is MOST significant with this design compared to a dual-homed DMZ? (Single choice)
+Choices:
+  A. Inability to use intrusion detection systems
+  B. Increased complexity of firewall rule management
+  C. Higher hardware costs for additional firewalls
+  D. Single point of failure for all network segmentation
+Correct Answer: D (B. Single point of failure for all network segmentation)
+----------------------------------------------------------------------
+Q30. A security engineer is implementing secure DNS controls to protect against phishing and malware campaigns. Which TWO DNS security technologies should be deployed? (Select 2 answers)
+Choices:
+  A. DNS filtering for malicious domain blocking
+  B. DNSSEC for response validation
+  C. DNS load balancing for performance
+  D. DNS caching for reduced latency
+  E. DNS over HTTPS (DoH) for encryption
+Correct Answers: A, B (E. DNS filtering & A. DNSSEC)
+----------------------------------------------------------------------
+Q31. A security team needs to prevent unauthorized configuration changes on mobile devices. Which mobile deployment model provides the STRICTEST control over device configurations? (Single choice)
+Choices:
+  A. Bring Your Own Device (BYOD)
+  B. Choose Your Own Device (CYOD)
+  C. Corporate-Owned, Business-Only (COBO)
+  D. Corporate-Owned, Personally-Enabled (COPE)
+Correct Answer: C (C. Corporate-Owned, Business-Only)
+----------------------------------------------------------------------
+Q32. Which resiliency design principle specifies that a system should continue to operate correctly even if one component fails? (Single choice)
+Choices:
+  A. Fail secure
+  B. High availability
+  C. Redundancy
+  D. Defense in depth
+Correct Answer: C (C. Redundancy)
+----------------------------------------------------------------------
+Q33. During a security audit, an organization discovers that employees are installing unauthorized software on critical servers. Which approach provides the STRONGEST prevention? (Single choice)
+Choices:
+  A. Installing host-based intrusion detection systems
+  B. Implementing application blocklisting
+  C. Configuring network access control
+  D. Deploying application allowlisting
+Correct Answer: D (B. Deploying application allowlisting)
+----------------------------------------------------------------------
+Q34. A user receives an email appearing to be from their bank asking them to click a link and verify account details. The link leads to a convincing fake website. This is BEST described as: (Single choice)
+Choices:
+  A. Pharming
+  B. Vishing
+  C. Spear phishing
+  D. Phishing
+Correct Answer: D (C. Phishing)
+----------------------------------------------------------------------
+Q35. During an incident response exercise, the team is practicing the PICERL framework. In which phase should they implement temporary network segmentation to prevent threat spread? (Single choice)
+Choices:
+  A. Preparation
+  B. Identification
+  C. Eradication
+  D. Containment
+Correct Answer: D (D. Containment)
+----------------------------------------------------------------------
+Q36. A disgruntled system administrator plants code that will execute a data destruction routine if their employment status changes to "terminated" in the HR database. What type of malware best describes this? (Single choice)
+Choices:
+  A. Logic bomb
+  B. Ransomware
+  C. Wiper malware
+  D. Backdoor
+Correct Answer: A (B. Logic bomb)
+----------------------------------------------------------------------
+Q37. A company is considering risk response strategies for a new business process. Which TWO strategies would involve continuing the activity while addressing the risk? (Choose TWO)
+Choices:
+  A. Risk termination
+  B. Risk acceptance
+  C. Risk mitigation
+  D. Risk avoidance
+  E. Risk transfer
+Correct Answers: C, E (B. Risk mitigation & D. Risk transfer)
+----------------------------------------------------------------------
+Q38. A financial institution's security policy requires immediate termination of network sessions after three failed login attempts. After implementation, the help desk receives numerous calls about locked accounts. Which control type does this session termination represent? (Single choice)
+Choices:
+  A. Deterrent control
+  B. Detective control
+  C. Corrective control
+  D. Preventive control
+Correct Answer: D (D. Preventive control)
+----------------------------------------------------------------------
+Q39. A threat actor compromises a popular website frequented by the target organization's employees and embeds malicious code to infect visitors. This is a: (Single choice)
+Choices:
+  A. Phishing attack
+  B. Watering hole attack
+  C. Cross-site request forgery
+  D. Drive-by download
+Correct Answer: B (B. Watering hole attack)
+----------------------------------------------------------------------
+Q40. An organization needs to ensure their cloud service provider complies with federal security requirements for handling government data. Which compliance framework should they verify the provider has implemented? (Single choice)
+Choices:
+  A. ISO/IEC 27001
+  B. SOC 2
+  C. PCI DSS
+  D. FedRAMP
+Correct Answer: D (C. FedRAMP)
+----------------------------------------------------------------------
+Q41. A hospital's patient records system is infected with ransomware. The attacker's note states that medical files have been exfiltrated and will be published unless payment is made within 48 hours. Which type of ransomware tactic is being used in this scenario? (Single choice)
+Choices:
+  A. Cryptolocker
+  B. Double extortion
+  C. Logic bomb
+  D. Wiper malware
+Correct Answer: B (B. Double extortion)
+----------------------------------------------------------------------
+Q42. A security analyst is evaluating third-party vendors and needs to assess their security posture. The organization wants to ensure they can verify vendor security claims independently. Which contractual clause should be included to facilitate this verification? (Single choice)
+Choices:
+  A. Right-to-Audit clause
+  B. Service Level Agreement (SLA)
+  C. Non-Disclosure Agreement (NDA)
+  D. Memorandum of Understanding (MOU)
+Correct Answer: A (B. Right-to-Audit clause)
+----------------------------------------------------------------------
+Q43. An attacker exploits a vulnerability in the WPA2 handshake process to intercept and decrypt wireless traffic. Which specific wireless attack is being performed? (Single choice)
+Choices:
+  A. KRACK attack
+  B. WPS PIN brute force
+  C. Evil twin
+  D. Deauthentication attack
+Correct Answer: A (B. KRACK attack)
+----------------------------------------------------------------------
+Q44. A company is concerned about risks associated with shared administrative accounts. Which TWO risks are MOST directly addressed by implementing individual named accounts? (Choose TWO)
+Choices:
+  A. Increased password complexity requirements
+  B. Inability to attribute actions to specific individuals
+  C. Lack of accountability for privileged actions
+  D. Difficulty implementing least privilege principles
+  E. Reduced network bandwidth for authentication
+Correct Answers: B, C
+----------------------------------------------------------------------
+Q45. An employee is required to use a smart card plus a PIN to access the system. This is an example of: (Single choice)
+Choices:
+  A. Federated identity
+  B. Multi-factor authentication
+  C. Single-factor authentication
+  D. Biometric authentication
+Correct Answer: B (B. Multi-factor authentication)
+----------------------------------------------------------------------
+Q46. During the eradication phase of an incident response, the team has removed malware from affected systems. What is the NEXT critical step to ensure the incident is fully resolved? (Single choice)
+Choices:
+  A. Document all findings in the incident report
+  B. Implement compensating controls to prevent recurrence
+  C. Restore systems from clean backups
+  D. Validate that all malicious artifacts have been removed
+Correct Answer: D (D. Validate that all malicious artifacts have been removed)
+----------------------------------------------------------------------
+Q47. An organization is developing a comprehensive risk management program. Select TWO elements that should be included in their risk register to effectively track and manage identified risks. (Select 2 answers)
+Choices:
+  A. Risk owner assignment for each identified risk
+  B. Employee security training completion rates
+  C. Detailed network topology diagrams
+  D. Risk response strategies and mitigation plans
+  E. Firewall rule change approval workflows
+Correct Answers: A, D
+----------------------------------------------------------------------
+Q48. During a qualitative risk assessment, a security team plots a threat with high likelihood and medium impact on the risk matrix. What is the MOST likely risk rating? (Single choice)
+Choices:
+  A. High
+  B. Medium
+  C. Critical
+  D. Low
+Correct Answer: A (C. High)
+----------------------------------------------------------------------
+Q49. A cloud security team needs to implement runtime protection for their containerized applications in Kubernetes. Which approach would provide the MOST effective protection against zero-day container escape attempts? (Single choice)
+Choices:
+  A. Container image vulnerability scanning during CI/CD
+  B. Regular operating system patching of worker nodes
+  C. Behavioral monitoring with system call analysis
+  D. Network security groups restricting container traffic
+Correct Answer: C (C. Behavioral monitoring with system call analysis)
+----------------------------------------------------------------------
+Q50. During a business impact analysis, a company identifies that their e-commerce platform generates $10,000 per hour in revenue. If a DDoS attack would cause 8 hours of downtime with a 50% chance of occurring annually, what is the ALE for this threat? (Single choice)
+Choices:
+  A. D. $160,000
+  B. A. $10,000
+  C. B. $40,000
+  D. C. $80,000
+Correct Answer: C (B. $40,000)
+----------------------------------------------------------------------
+Q51. A security team is implementing a just-in-time privileged access management solution. Which capability is MOST critical for reducing the attack surface associated with standing administrative privileges? (Single choice)
+Choices:
+  A. Continuous session monitoring
+  B. Permanent role-based access control
+  C. Time-bound elevation with automatic revocation
+  D. Comprehensive logging of all privileged activities
+Correct Answer: C (C. Time-bound elevation with automatic revocation)
+----------------------------------------------------------------------
+Q52. A security manager is developing a new acceptable use policy (AUP) for the organization. Which of the following elements is MOST critical to ensure employees understand their responsibilities? (Single choice)
+Choices:
+  A. Detailed technical configuration standards
+  B. Software licensing compliance procedures
+  C. Network architecture diagrams
+  D. Clear consequences for policy violations
+Correct Answer: D (B. Clear consequences for policy violations)
+----------------------------------------------------------------------
+Q53. A risk assessment identifies that a web application has inherent risk of $80,000. After implementing security controls, the residual risk is reduced to $20,000. The controls cost $15,000 annually. What is the control risk? (Single choice)
+Choices:
+  A. B. $20,000
+  B. D. $65,000
+  C. C. $60,000
+  D. A. $15,000
+Correct Answer: D (A. $15,000)
+----------------------------------------------------------------------
+Q54. An employee receives a phone call from someone claiming to be from the IT department, asking for their VPN credentials to 'verify account status.' Which type of social engineering attack is this? (Single choice)
+Choices:
+  A. Impersonation
+  B. Phishing
+  C. Smishing
+  D. Vishing
+Correct Answer: D (B. Vishing)
+----------------------------------------------------------------------
+Q55. A zero-trust architecture model assumes which of the following? (Single choice)
+Choices:
+  A. External users must always use VPN before accessing resources
+  B. Users inside the network perimeter are trustworthy
+  C. Firewalls are sufficient to protect internal resources
+  D. No user or system is trusted by default, even inside the network
+Correct Answer: D (D. No user or system is trusted by default, even inside the network)
+----------------------------------------------------------------------
+Q56. What does the term 'chain of trust' refer to in the context of PKI? (Single choice)
+Choices:
+  A. A hierarchical sequence of certificates where each certificate validates the one below it, up to a trusted root CA
+  B. The log of all certificate issuance events in chronological order
+  C. A sequence of encryption algorithms applied in order
+  D. A VPN tunnel that passes through multiple intermediary servers
+Correct Answer: A (B. A hierarchical sequence of certificates...)
+----------------------------------------------------------------------
+Q57. An organization's helpdesk receives reports that users cannot access cloud applications via their Single Sign-On (SSO) portal after a recent IdP certificate update. The security team confirms the IdP is functional internally. Which protocol component is MOST likely causing this SSO failure? (Single choice)
+Choices:
+  A. The SAML 2.0 service provider certificate
+  B. The LDAP bind credentials
+  C. The Kerberos TGT renewal process
+  D. The OAuth 2.0 authorization code flow
+Correct Answer: A (B. The SAML 2.0 service provider certificate)
+----------------------------------------------------------------------
+Q58. A company's DR plan specifies that systems must be restored to full operation within 4 hours and that no more than 1 hour of data can be lost. These metrics are the: (Single choice)
+Choices:
+  A. C. SLA (Service Level Agreement) and SLO (Service Level Objective)
+  B. A. MTD (Maximum Tolerable Downtime) and MTTR (Mean Time to Repair)
+  C. B. RTO (Recovery Time Objective) and RPO (Recovery Point Objective)
+  D. D. BCP (Business Continuity Plan) and DRP (Disaster Recovery Plan)
+Correct Answer: C (B. RTO (Recovery Time Objective) and RPO (Recovery Point Objective))
+----------------------------------------------------------------------
+Q59. During a forensic investigation, an analyst discovers that an attacker has gained persistent remote access to a compromised system and can execute commands, transfer files, and activate the webcam without the user's knowledge. Which type of malware provides these capabilities? (Single choice)
+Choices:
+  A. RAT (Remote Access Trojan)
+  B. Cryptominer
+  C. Keylogger
+  D. Rootkit
+Correct Answer: A (B. RAT (Remote Access Trojan))
+----------------------------------------------------------------------
+Q60. A company implements a policy requiring that no single employee can complete a financial transaction without approval from another employee. This is an example of: (Single choice)
+Choices:
+  A. Job rotation
+  B. Least privilege
+  C. Separation of duties
+  D. Mandatory vacation
+Correct Answer: C (C. Separation of duties)
+----------------------------------------------------------------------
+Q61. Which of the following encryption standards uses a 128-bit, 192-bit, or 256-bit key and is the current U.S. government standard for symmetric encryption? (Single choice)
+Choices:
+  A. RSA
+  B. 3DES
+  C. AES
+  D. DES
+Correct Answer: C (C. AES)
+----------------------------------------------------------------------
+Q62. A web application renders user-submitted content in responses without sanitization, allowing an attacker to embed scripts that execute in other users' browsers. This is: (Single choice)
+Choices:
+  A. Cross-Site Request Forgery (CSRF)
+  B. Directory traversal
+  C. SQL injection
+  D. Cross-Site Scripting (XSS)
+Correct Answer: D (D. Cross-Site Scripting (XSS))
+----------------------------------------------------------------------
+Q63. A company's web server has an asset value of $150,000. During a risk assessment, it's determined that a ransomware attack would result in 40% exposure factor with an annualized rate of occurrence of 3. What is the Annualized Loss Expectancy (ALE)? (Single choice)
+Choices:
+  A. $60,000
+  B. $120,000
+  C. $180,000
+  D. $90,000
+Correct Answer: C (D. $180,000)
+----------------------------------------------------------------------
+Q64. During a security audit, an analyst discovers that a critical server room lacks a mantrap entrance due to space constraints. The organization implements biometric scanners and 24/7 CCTV monitoring with recorded footage instead. Which control type BEST describes these implemented measures? (Single choice)
+Choices:
+  A. Preventive control
+  B. Corrective control
+  C. Compensating control
+  D. Detective control
+Correct Answer: C (C. Compensating control)
+----------------------------------------------------------------------
+Q65. A security administrator is configuring firewall rules for a dual-homed DMZ architecture. The company's public web server in the DMZ needs to communicate with specific backend services. Which TWO firewall rules should be implemented to maintain security? (Choose TWO)
+Choices:
+  A. Allow all outbound traffic from DMZ to internal network
+  B. Allow inbound HTTP/HTTPS traffic from internet to DMZ web server
+  C. Block all traffic from internet to internal network
+  D. Allow internal users to directly access the DMZ web server via RDP for administration
+  E. Allow specific database queries from DMZ web server to internal database server on port 1433
+Correct Answers: B, E
+----------------------------------------------------------------------
+Q66. An organization is implementing a new security awareness program and wants to measure its effectiveness. Which metric would provide the MOST meaningful insight into whether employees are applying their security training? (Single choice)
+Choices:
+  A. Reduction in phishing click-through rates over time
+  B. Number of security policy acknowledgments collected
+  C. Percentage of employees who complete the training modules
+  D. Training satisfaction scores from participant surveys
+Correct Answer: A (B. Reduction in phishing click-through rates over time)
+----------------------------------------------------------------------
+Q67. A company is preparing for a SOC 2 audit. Which TWO characteristics differentiate SOC 2 Type II from SOC 2 Type I? (Choose TWO)
+Choices:
+  A. Type I assesses system design at a specific point in time
+  B. Type II is only for financial reporting controls
+  C. Type I requires a minimum six-month testing period
+  D. Type II includes testing of controls throughout the audit period
+  E. Type II evaluates operational effectiveness over time
+Correct Answers: D, E
+----------------------------------------------------------------------
+Q68. An organization wants to implement privileged workstations for administrative tasks. What is the PRIMARY security benefit of this approach? (Single choice)
+Choices:
+  A. Reduced hardware costs through virtualization
+  B. Faster performance for administrative tasks
+  C. Simplified backup procedures for workstations
+  D. Isolation of privileged sessions from regular user activities
+Correct Answer: D (D. Isolation of privileged sessions from regular user activities)
+----------------------------------------------------------------------
+Q69. A company's risk assessment calculates that a web server outage would cause $5,000 per hour in lost revenue. The server experiences 3 outages per year averaging 2 hours each. What is the Annualized Loss Expectancy (ALR/ALE) for this risk? (Single choice)
+Choices:
+  A. C. $15,000
+  B. A. $5,000
+  C. B. $10,000
+  D. D. $30,000
+Correct Answer: D (D. $30,000)
+----------------------------------------------------------------------
+Q70. Which of the following BEST describes the purpose of key escrow? (Single choice)
+Choices:
+  A. Storing copies of encryption keys with a trusted third party for recovery purposes
+  B. Distributing encryption keys to multiple users for redundancy
+  C. Using a public key to encrypt a symmetric key before transmission
+  D. Rotating encryption keys on a scheduled basis to reduce exposure
+Correct Answer: A (A. Storing copies of encryption keys...)
+----------------------------------------------------------------------
+Q71. A penetration tester is hired and given no prior knowledge of the target's systems or architecture before conducting their test. This is known as a: (Single choice)
+Choices:
+  A. Black-box test
+  B. Crystal-box test
+  C. Gray-box test
+  D. White-box test
+Correct Answer: A (A. Black-box test)
+----------------------------------------------------------------------
+Q72. A company's web server begins experiencing extremely slow performance. Investigation reveals high CPU usage from a process that connects to a cryptocurrency mining pool. Which type of malware is MOST likely installed? (Single choice)
+Choices:
+  A. Worm
+  B. Cryptominer
+  C. Spyware
+  D. Adware
+Correct Answer: B (B. Cryptominer)
+----------------------------------------------------------------------
+Q73. A company's security policy requires that all data transmitted over the internet be encrypted. Which protocol provides encryption for web traffic at the transport layer? (Single choice)
+Choices:
+  A. TLS (Transport Layer Security)
+  B. HTTP
+  C. IPsec (Internet Protocol Security)
+  D. SSH (Secure Shell)
+Correct Answer: A (A. TLS (Transport Layer Security))
+----------------------------------------------------------------------
+Q74. An organization's risk appetite statement indicates they will accept moderate financial risk for strategic initiatives. During a project review, a risk is identified with high financial impact but low probability. The risk falls within the stated appetite but exceeds typical variance. This scenario primarily concerns: (Single choice)
+Choices:
+  A. Risk tolerance levels
+  B. Risk mitigation planning
+  C. Risk acceptance criteria
+  D. Risk avoidance thresholds
+Correct Answer: A (A. Risk tolerance levels)
+----------------------------------------------------------------------
+Q75. An attacker calls an employee pretending to be from the IT help desk and asks for their login credentials to 'fix an urgent system issue.' This is an example of: (Single choice)
+Choices:
+  A. Phishing
+  B. Smishing
+  C. Vishing
+  D. Whaling
+Correct Answer: C (B. Vishing)
+----------------------------------------------------------------------
+Q76. During a business continuity planning session, the team is documenting residual risks after implementing controls. What is the PRIMARY purpose of tracking residual risk in the risk register? (Single choice)
+Choices:
+  A. To justify additional budget requests
+  B. To ensure awareness and ongoing monitoring
+  C. To transfer remaining risks to insurance
+  D. To eliminate all remaining risks
+Correct Answer: B (B. To ensure awareness and ongoing monitoring)
+----------------------------------------------------------------------
+Q77. A security team calculates that a database server has an asset value of $50,000. If compromised, the exposure factor is estimated at 40%, and the annualized rate of occurrence is 2. What is the Annualized Loss Expectancy (ALE)? (Single choice)
+Choices:
+  A. D. $100,000
+  B. C. $50,000
+  C. B. $40,000
+  D. A. $20,000
+Correct Answer: C (B. $40,000)
+----------------------------------------------------------------------
+Q78. An attacker convinces a helpdesk employee to reset a password by pretending to be a senior manager. This exploits which attack technique? (Single choice)
+Choices:
+  A. Shoulder surfing
+  B. Impersonation
+  C. Baiting
+  D. Tailgating
+Correct Answer: B (B. Impersonation)
+----------------------------------------------------------------------
+Q79. An attacker registers the domain 'micosoft.com' (missing an 'r') to catch users who mistype Microsoft's URL. This is known as: (Single choice)
+Choices:
+  A. Domain hijacking
+  B. Pharming
+  C. Typosquatting
+  D. Watering hole attack
+Correct Answer: C (C. Typosquatting)
+----------------------------------------------------------------------
+Q80. A security analyst receives a SIEM alert indicating multiple failed SSH login attempts from an unknown external IP address targeting a critical server. The analyst wants to determine if this is part of a coordinated attack campaign. Which MITRE ATT&CK framework component would be MOST useful for identifying related adversary techniques? (Single choice)
+Choices:
+  A. Command and Control matrices
+  B. Initial Access techniques
+  C. Tactics, Techniques, and Procedures (TTPs)
+  D. Impact assessment guidelines
+Correct Answer: C (C. Tactics, Techniques, and Procedures (TTPs))
+----------------------------------------------------------------------
+Q81. An IDS (Intrusion Detection System) differs from an IPS (Intrusion Prevention System) in that an IDS: (Single choice)
+Choices:
+  A. Only monitors and alerts without taking action to block traffic
+  B. Can only detect known malware, while IPS uses behavior analysis
+  C. Is deployed inline and can block malicious traffic automatically
+  D. Uses signature updates quarterly, while IPS uses real-time updates
+Correct Answer: A (A. Only monitors and alerts without taking action to block traffic)
+----------------------------------------------------------------------
+Q82. A security team wants to implement a control that prevents unauthorized physical access to a server room. Which type of security control BEST describes a biometric door lock? (Single choice)
+Choices:
+  A. Preventive control
+  B. Compensating control
+  C. Corrective control
+  D. Detective control
+Correct Answer: A (A. Preventive control)
+----------------------------------------------------------------------
+Q83. Which of the following BEST describes infrastructure as code (IaC) from a security perspective? (Single choice)
+Choices:
+  A. Is only applicable to containerized workloads in Kubernetes
+  B. Allows infrastructure provisioning to be version-controlled, audited, and tested for security issues before deployment
+  C. Eliminates all security misconfigurations by automating deployments
+  D. Replaces the need for a firewall by defining security rules in code
+Correct Answer: B (B. Allows infrastructure provisioning to be version-controlled...)
+----------------------------------------------------------------------
+Q84. A company's security team discovers that a shared administrator account for their database servers has been compromised. Which PAM control would have BEST limited the damage from this incident? (Single choice)
+Choices:
+  A. Deploying network segmentation between database servers
+  B. Implementing credential vaulting with individual named accounts
+  C. Requiring quarterly password rotation for shared accounts
+  D. Enabling session recording for all administrative access
+Correct Answer: B (B. Implementing credential vaulting with individual named accounts)
+----------------------------------------------------------------------
+Q85. An organization needs to deploy an intrusion prevention system (IPS) that can block malicious traffic in real-time. Where should the IPS be placed to provide maximum protection for internal servers while maintaining DMZ functionality? (Single choice)
+Choices:
+  A. Between DMZ and internal network in inline mode
+  B. Between outer firewall and DMZ in inline mode
+  C. Between the internet and outer firewall in inline mode
+  D. On a span port monitoring internal network traffic
+Correct Answer: A (A. Between DMZ and internal network in inline mode)
+----------------------------------------------------------------------
+Q86. An attacker exploits a vulnerability in the WPA2 protocol that allows them to intercept and decrypt wireless traffic between a client and access point. Which specific wireless attack is being performed? (Single choice)
+Choices:
+  A. Deauthentication attack
+  B. KRACK attack
+  C. Evil twin
+  D. WPS PIN attack
+Correct Answer: B (C. KRACK attack)
+----------------------------------------------------------------------
+Q87. An incident responder needs to sequence actions during a containment phase. Which action should be performed FIRST when conditioning a compromised user workstation? (Single choice)
+Choices:
+  A. Image the hard drive for forensic analysis
+  B. Run antivirus scans to remove malware
+  C. Interview the user about suspicious activity
+  D. Disconnect the workstation from the network
+Correct Answer: D (D. Disconnect the workstation from the network)
+----------------------------------------------------------------------
+Q88. A security manager is developing a data classification policy. Select TWO elements that should be included in the handling procedures for CONFIDENTIAL data. (Select 2 answers)
+Choices:
+  A. Encryption requirements for storage and transmission
+  B. Automatic deletion after 30 days
+  C. Permission for sharing with any internal employee
+  D. Access limited to authorized personnel with need-to-know
+  E. Storage on unencrypted USB drives for convenience
+Correct Answers: A, D
+----------------------------------------------------------------------
+Q89. During a mobile device incident response, an analyst needs to perform these actions: 1. Isolate the device from the network, 2. Preserve device evidence, 3. Determine the infection scope, 4. Remove malicious applications. What is the CORRECT order according to PICERL phases? (Single choice)
+Choices:
+  A. D. 1, 2, 3, 4
+  B. A. 3, 1, 2, 4
+  C. B. 1, 3, 2, 4
+  D. C. 2, 3, 1, 4
+Correct Answer: C (B. 1, 3, 2, 4)
+----------------------------------------------------------------------
+Q90. A security analyst notices a service account with excessive permissions that could be exploited if compromised. Which solution provides the BEST security improvement? (Single choice)
+Choices:
+  A. Require monthly password rotation
+  B. Implement Group Managed Service Accounts (GMSA)
+  C. Add the service account to the Domain Admins group
+  D. Disable logging for service account activities
+Correct Answer: B (B. Implement Group Managed Service Accounts (GMSA))
+======================================================================
