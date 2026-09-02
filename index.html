@@ -1,55 +1,81 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CySA+ Flashcards</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Poppins,sans-serif;background:linear-gradient(135deg,#08111f,#1a1147,#0d6efd);background-size:300% 300%;animation:bg 12s ease infinite;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;overflow:hidden}
-@keyframes bg{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.bg span{position:absolute;border-radius:50%;background:#ffffff12;animation:f 18s linear infinite}
-.bg span:nth-child(1){width:220px;height:220px;left:8%;top:15%}
-.bg span:nth-child(2){width:120px;height:120px;right:10%;top:20%}
-.bg span:nth-child(3){width:180px;height:180px;left:60%;bottom:5%}
-@keyframes f{50%{transform:translateY(-30px)}}
-.wrap{width:min(900px,92vw)}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.logo{font-size:2rem;font-weight:700}
-.badge{background:#ffffff20;padding:10px 18px;border-radius:999px;backdrop-filter:blur(12px)}
-.card{background:#ffffff18;border:1px solid #ffffff30;border-radius:24px;padding:36px;min-height:380px;max-height:65vh;overflow-y:auto;backdrop-filter:blur(18px);box-shadow:0 20px 60px #0006;display:flex;flex-direction:column;justify-content:space-between;transition:.35s;cursor:pointer}
-.card:hover{transform:translateY(-4px) scale(1.005)}
-h2{font-size:1.15rem;font-weight:500;line-height:1.6;white-space:pre-wrap;text-align:left;margin:0 0 20px 0}
-p{opacity:.7;font-size:0.9rem;margin:0;text-align:right}
-.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
-button{border:none;border-radius:14px;padding:16px;font:inherit;font-weight:600;background:linear-gradient(135deg,#00d4ff,#6d5dfc);color:#fff;cursor:pointer;transition:.2s}
-button:hover{transform:translateY(-3px);box-shadow:0 10px 25px #0005}
-.progress{height:10px;background:#ffffff22;border-radius:99px;overflow:hidden;margin:20px 0}
-.bar{height:100%;width:2%;background:linear-gradient(90deg,#00ffd0,#00a2ff);transition:width .2s}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CySA+ Flashcards & Quiz</title>
+  <style>
+    :root { color-scheme: dark; --bg:#08111f; --panel:rgba(13, 28, 53, .88); --text:#f6fbff; --muted:#b9c9dc; --accent:#00d4ff; --accent2:#6d5dfc; --line:rgba(255,255,255,.18); --good:#47d17d; --bad:#ff6b7a; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:clamp(1rem,4vw,3rem); color:var(--text); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at top right,#213e8a 0,transparent 34%),linear-gradient(135deg,#08111f,#1a1147,#0d6efd); }
+    body::before { content:""; position:fixed; inset:0; pointer-events:none; background:linear-gradient(135deg,rgba(255,255,255,.06),transparent 45%); }
+    body.cyberpunk-mode { --bg:#05050a; --panel:rgba(0,22,8,.86); --text:#00ff66; --muted:#9dffc2; --accent:#00ff66; --accent2:#003311; --line:#00ff66; --good:#00ff66; --bad:#ff2a62; background:#05050a; font-family:"Courier New",monospace; }
+    body.cyberpunk-mode::after { content:""; position:fixed; inset:0; pointer-events:none; opacity:.22; background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,255,102,.32) 4px); }
+    .app { width:min(900px,100%); margin:auto; position:relative; z-index:1; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+    h1 { margin:0; font-size:clamp(1.5rem,4vw,2.2rem); }
+    .shield-wrap { position:relative; display:inline-flex; }
+    .secret-trigger { border:0; background:transparent; color:inherit; font:inherit; font-size:1.35em; cursor:pointer; padding:0 .2rem; transition:transform .2s; }
+    .secret-trigger:hover,.secret-trigger:focus-visible { transform:scale(1.15) rotate(-5deg); outline:2px solid var(--accent); outline-offset:3px; border-radius:.25rem; }
+    .shield-hint { position:absolute; left:0; bottom:calc(100% + .65rem); width:max-content; max-width:min(19rem,80vw); padding:.55rem .7rem; border:1px solid var(--accent); background:#020805; color:#00ff66; box-shadow:0 0 14px rgba(0,255,102,.35); font:700 .72rem/1.35 "Courier New",monospace; opacity:0; pointer-events:none; transform:translateY(.25rem); transition:opacity .16s,transform .16s; }
+    .shield-wrap:hover .shield-hint,.shield-wrap:focus-within .shield-hint { opacity:1; transform:translateY(0); }
+    .badge,.counter { padding:.55rem .8rem; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--muted); white-space:nowrap; }
+    .quiz-scoreboard { display:flex; gap:.5rem; align-items:center; justify-content:flex-end; margin:-.25rem 0 1rem; color:var(--text); font-family:"Courier New",monospace; font-size:.85rem; font-weight:700; }
+    .digital-readout { padding:.4rem .55rem; border:1px solid var(--accent); background:#020805; color:#00ff66; text-shadow:0 0 8px #00ff66; }
+    .progress { height:.6rem; overflow:hidden; border:1px solid var(--line); border-radius:999px; margin:1rem 0 1.5rem; background:rgba(255,255,255,.12); }
+    .bar { height:100%; width:2%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .2s; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:1.25rem; padding:clamp(1.2rem,4vw,2.3rem); box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    .mode-note { margin:0 0 1rem; color:var(--muted); font-size:.9rem; }
+    .question { margin:0; white-space:pre-wrap; font-size:clamp(1rem,2.4vw,1.2rem); line-height:1.65; }
+    .answer { margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid var(--line); white-space:pre-wrap; line-height:1.6; color:var(--muted); }
+    .hidden { display:none; }
+    .controls { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin-top:1.25rem; }
+    button { font:inherit; font-weight:700; color:var(--text); border:1px solid var(--line); border-radius:.75rem; padding:.85rem 1rem; background:linear-gradient(135deg,var(--accent),var(--accent2)); cursor:pointer; }
+    button:hover:not(:disabled) { transform:translateY(-2px); filter:brightness(1.1); }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .options { display:grid; gap:.75rem; margin-top:1.35rem; }
+    .option { text-align:left; background:transparent; line-height:1.45; }
+    .option.correct { background:rgba(71,209,125,.2); border-color:var(--good); color:var(--good); }
+    .option.incorrect { background:rgba(255,107,122,.2); border-color:var(--bad); color:var(--bad); }
+    .feedback { margin-top:1rem; padding:1rem; border-left:4px solid var(--accent); background:rgba(255,255,255,.06); line-height:1.55; white-space:pre-wrap; }
+    .quiz-actions { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-top:1.25rem; }
+    .quiz-actions button { flex:0 1 auto; }
+    .summary { text-align:center; }
+    .score { display:inline-grid; place-items:center; width:8rem; height:8rem; margin:1rem; border:4px solid var(--accent); border-radius:50%; font-size:2rem; font-weight:800; }
+    @media (max-width:640px) { header { align-items:flex-start; } .controls { grid-template-columns:repeat(2,1fr); } .quiz-actions { flex-direction:column; align-items:stretch; } }
+  </style>
 </head>
 <body>
-<div class="bg"><span></span><span></span><span></span></div>
-<div class="wrap">
-  <div class="header">
-    <div class="logo">🛡 CySA+ Flashcards</div>
-    <div class="badge">Question <span id="qnum">1</span>/50</div>
-  </div>
-  <div class="progress"><div class="bar" id="bar"></div></div>
-  <div class="card" id="card" onclick="flip()">
-    <h2 id="title">Question Loading...</h2>
-    <p id="hint">Click to flip</p>
-  </div>
-  <div class="controls">
-    <button onclick="prev()">⬅ Previous</button>
-    <button onclick="flip()">🔄 Flip</button>
-    <button onclick="next()">Next ➡</button>
-    <button onclick="shuffle()">🎲 Shuffle</button>
-  </div>
-</div>
+  <main class="app">
+    <header>
+      <h1><span class="shield-wrap"><button id="quiz-trigger" class="secret-trigger" type="button" aria-label="Shield control">🛡</button><span class="shield-hint" role="tooltip">HIDDEN THEME: click to access quiz mode</span></span> CySA+ Flashcards</h1>
+      <div class="badge"><span id="mode-label">Flashcards</span> · <span id="position">1</span>/50</div>
+    </header>
+    <div id="quiz-scoreboard" class="quiz-scoreboard hidden" aria-live="polite">
+      <span class="digital-readout">POINTS <span id="points">0000</span></span>
+      <span class="digital-readout">INCORRECT <span id="incorrect-count">00</span></span>
+    </div>
+    <div class="progress" aria-label="Progress"><div id="bar" class="bar"></div></div>
 
-<script>
+    <section id="flash-view" class="panel">
+      <p class="mode-note">Click the card or use Flip to reveal the answer.</p>
+      <h2 id="question" class="question">Loading…</h2>
+      <p id="answer" class="answer hidden"></p>
+      <div class="controls">
+        <button id="previous" type="button">← Previous</button>
+        <button id="flip" type="button">↻ Flip</button>
+        <button id="next" type="button">Next →</button>
+        <button id="shuffle" type="button">🎲 Shuffle</button>
+      </div>
+    </section>
+
+    <section id="quiz-view" class="panel hidden" aria-live="polite">
+      <p class="mode-note">Quiz mode uses the same 50 flashcard questions. Choose one answer to receive instant feedback.</p>
+      <div id="quiz-content"></div>
+    </section>
+  </main>
+
+  <script>
 const cards = [
   {
     q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution",
@@ -87,194 +113,341 @@ const cards = [
     q: "9. A security tool automatically runs an endpoint isolation routine immediately after discovering a valid file hash signature. What platform handled this?\n\nA) SIEM\nB) SOAR\nC) EDR\nD) CASB",
     a: "Correct Answer: C\n\nRationale: Endpoint Detection and Response (EDR) agents actively record system behaviors and can automatically isolate individual hosts."
   },
-  {
-    q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto",
-    a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address."
-  },
-  {
-    q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings",
-    a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions."
-  },
-  {
-    q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat",
-    a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns."
-  },
-  {
-    q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment",
-    a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence."
-  },
-  {
-    q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass",
-    a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods."
-  },
-  {
-    q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering",
-    a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators."
-  },
-  {
-    q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment",
-    a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code."
-  },
-  {
-    q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing",
-    a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations."
-  },
-  {
-    q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling",
-    a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions."
-  },
-  {
-    q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices",
-    a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines."
-  },
-  {
-    q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series",
-    a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers."
-  },
-  {
-    q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS",
-    a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields."
-  },
-  {
-    q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB",
-    a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance."
-  },
-  {
-    q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction",
-    a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability."
-  },
-  {
-    q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative",
-    a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system."
-  },
-  {
-    q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability",
-    a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands."
-  },
-  {
-    q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration",
-    a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control."
-  },
-  {
-    q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow",
-    a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files."
-  },
-  {
-    q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation",
-    a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures."
-  },
-  {
-    q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint",
-    a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately."
-  },
-  {
-    q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management",
-    a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks."
-  },
-  {
-    q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide",
-    a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish."
-  },
-  {
-    q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK",
-    a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions."
-  },
-  {
-    q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis",
-    a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court."
-  },
-  {
-    q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training",
-    a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection."
-  },
-  {
-    q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan",
-    a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation."
-  },
-  {
-    q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment",
-    a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally."
-  },
-  {
-    q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation",
-    a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines."
-  },
-  {
-    q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan",
-    a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents."
-  },
-  {
-    q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition",
-    a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans."
-  },
-  {
-    q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management",
-    a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed."
-  },
-  {
-    q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure",
-    a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation."
-  },
-  {
-    q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary",
-    a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership."
-  },
-  {
-    q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)",
-    a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified."
-  },
-  {
-    q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends",
-    a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed."
-  },
-  {
-    q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan",
-    a: "Correct Answer: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines."
-  },
-  {
-    q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing",
-    a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards."
-  },
-  {
-    q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory",
-    a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach."
-  },
-  {
-    q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels",
-    a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs."
-  },
-  {
-    q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody",
-    a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time."
-  },
-  {
-    q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation",
-    a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds."
-  }
+  {q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto",
+a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address."
+},
+{
+q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings",
+a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions."
+},
+{
+q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat",
+a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns."
+},
+{
+q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment",
+a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence."
+},
+{
+q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass",
+a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods."
+},
+{
+q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering",
+a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators."
+},
+{
+q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment",
+a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code."
+},
+{
+q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing",
+a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations."
+},
+{
+q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling",
+a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions."
+},
+{
+q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices",
+a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines."
+},
+{
+q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series",
+a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers."
+},
+{
+q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS",
+a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields."
+},
+{
+q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB",
+a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance."
+},
+{
+q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction",
+a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability."
+},
+{
+q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative",
+a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system."
+},
+{
+q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability",
+a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands."
+},
+{
+q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration",
+a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control."
+},
+{
+q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow",
+a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files."
+},
+{
+q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation",
+a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures."
+},
+{
+q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint",
+a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately."
+},
+{
+q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management",
+a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks."
+},
+{
+q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide",
+a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish."
+},
+{
+q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK",
+a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions."
+},
+{
+q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis",
+a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court."
+},
+{
+q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training",
+a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection."
+},
+{
+q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan",
+a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation."
+},
+{
+q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment",
+a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally."
+},
+{
+q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation",
+a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines."
+},
+{
+q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan",
+a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents."
+},
+{
+q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition",
+a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans."
+},
+{
+q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management",
+a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed."
+},
+{
+q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure",
+a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation."
+},
+{
+q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary",
+a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership."
+},
+{
+q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)",
+a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified."
+},
+{
+q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends",
+a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed."
+},
+{
+q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan",
+a: "Correct Agreement: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines."
+},
+{
+q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing",
+a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards."
+},
+{
+q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory",
+a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach."
+},
+{
+q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels",
+a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs."
+},
+{
+q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody",
+a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time."
+},
+{
+q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation",
+a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds."
+}
 ];
 
-let i = 0, s = false;
+    let currentIndex = 0;
+    let flipped = false;
+    let quizMode = false;
+    let selected = false;
+    let score = 0;
+    let incorrect = 0;
 
-function render() {
-  document.getElementById("title").textContent = s ? cards[i].a : cards[i].q;
-  document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
-  document.getElementById("qnum").textContent = i + 1;
-  document.getElementById("bar").style.width = ((i + 1) / cards.length * 100) + "%";
-  document.getElementById("card").scrollTop = 0;
-}
+    const $ = (id) => document.getElementById(id);
+    const questionText = $('question');
+    const answerText = $('answer');
+    const flashView = $('flash-view');
+    const quizView = $('quiz-view');
 
-function flip() { s = !s; render(); }
-function next() { i = (i + 1) % cards.length; s = false; render(); }
-function prev() { i = (i - 1 + cards.length) % cards.length; s = false; render(); }
-function shuffle() { cards.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
+    function updateDigitalScoreboard() {
+      $('points').textContent = String(score * 100).padStart(4, '0');
+      $('incorrect-count').textContent = String(incorrect).padStart(2, '0');
+    }
 
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") { e.preventDefault(); flip(); }
-  if (e.key === "ArrowRight") next();
-  if (e.key === "ArrowLeft") prev();
-});
+    function parseCard(card) {
+      const answerMatch = card.a.match(/Correct (?:Answer|Agreement): ([A-D])/);
+      const correctLetter = answerMatch ? answerMatch[1] : '';
+      const parts = card.q.split(/\n\n/);
+      const stem = parts[0];
+      const options = (parts[1] || '').split('\n').map(line => {
+        const match = line.match(/^([A-D])\)\s*(.*)$/);
+        return match ? { letter: match[1], text: match[2] } : null;
+      }).filter(Boolean);
+      return { stem, options, correctLetter, rationale: card.a };
+    }
 
-render();
-</script>
+    function updateProgress(index, total, label) {
+      $('position').textContent = label || (index + 1);
+      $('bar').style.width = ((index + 1) / total * 100) + '%';
+    }
+
+    function renderFlash() {
+      const card = cards[currentIndex];
+      questionText.textContent = card.q;
+      answerText.textContent = card.a;
+      answerText.classList.toggle('hidden', !flipped);
+      $('mode-label').textContent = 'Flashcards';
+      updateProgress(currentIndex, cards.length);
+    }
+
+    function shuffleCards() {
+      for (let index = cards.length - 1; index > 0; index--) {
+        const other = Math.floor(Math.random() * (index + 1));
+        [cards[index], cards[other]] = [cards[other], cards[index]];
+      }
+      currentIndex = 0;
+      flipped = false;
+      renderFlash();
+    }
+
+    function startQuiz() {
+      quizMode = true;
+      currentIndex = 0;
+      selected = false;
+      score = 0;
+      incorrect = 0;
+      flipped = false;
+      document.body.classList.add('cyberpunk-mode');
+      $('quiz-scoreboard').classList.remove('hidden');
+      updateDigitalScoreboard();
+      flashView.classList.add('hidden');
+      quizView.classList.remove('hidden');
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      if (currentIndex >= cards.length) {
+        const percentage = Math.round((score / cards.length) * 100);
+        $('mode-label').textContent = 'Quiz complete';
+        $('position').textContent = '50';
+        $('bar').style.width = '100%';
+        $('quiz-content').innerHTML = '<div class="summary"><h2>Quiz complete</h2><div class="score">' + percentage + '%</div><p>Points: ' + (score * 100) + ' · Correct: ' + score + ' · Incorrect: ' + incorrect + '.</p><button id="restart" type="button">Restart quiz</button><button id="return" type="button">Return to flashcards</button></div>';
+        $('restart').addEventListener('click', startQuiz);
+        $('return').addEventListener('click', returnToFlashcards);
+        return;
+      }
+      const item = parseCard(cards[currentIndex]);
+      if (!item.options.length || !item.correctLetter) {
+        $('quiz-content').textContent = 'This question could not be parsed.';
+        return;
+      }
+      $('mode-label').textContent = 'Quiz';
+      updateProgress(currentIndex, cards.length);
+      const content = $('quiz-content');
+      content.replaceChildren();
+      const heading = document.createElement('h2');
+      heading.className = 'question';
+      heading.textContent = (currentIndex + 1) + '. ' + item.stem;
+      content.appendChild(heading);
+
+      const options = document.createElement('div');
+      options.className = 'options';
+      item.options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.type = 'button';
+        button.textContent = option.letter + ') ' + option.text;
+        button.addEventListener('click', () => selectAnswer(option.letter, item, options, button));
+        options.appendChild(button);
+      });
+      content.appendChild(options);
+
+      const feedback = document.createElement('div');
+      feedback.id = 'feedback';
+      feedback.className = 'feedback hidden';
+      content.appendChild(feedback);
+
+      const actions = document.createElement('div');
+      actions.className = 'quiz-actions';
+      const exit = document.createElement('button');
+      exit.type = 'button';
+      exit.textContent = '← Flashcards';
+      exit.addEventListener('click', returnToFlashcards);
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.textContent = currentIndex === cards.length - 1 ? 'See score →' : 'Next question →';
+      next.disabled = true;
+      next.id = 'quiz-next';
+      next.addEventListener('click', () => { currentIndex++; selected = false; renderQuiz(); });
+      actions.append(exit, next);
+      content.appendChild(actions);
+    }
+
+    function selectAnswer(letter, item, container, clicked) {
+      if (selected) return;
+      selected = true;
+      const correct = letter === item.correctLetter;
+      if (correct) score++;
+      else incorrect++;
+      updateDigitalScoreboard();
+      Array.from(container.children).forEach(button => {
+        button.disabled = true;
+        if (button.textContent.startsWith(item.correctLetter + ')')) button.classList.add('correct');
+      });
+      if (!correct) clicked.classList.add('incorrect');
+      const feedback = $('feedback');
+      feedback.textContent = (correct ? 'Correct.\n\n' : 'Not quite.\n\n') + item.rationale;
+      feedback.classList.remove('hidden');
+      $('quiz-next').disabled = false;
+    }
+
+    function returnToFlashcards() {
+      quizMode = false;
+      document.body.classList.remove('cyberpunk-mode');
+      $('quiz-scoreboard').classList.add('hidden');
+      flashView.classList.remove('hidden');
+      quizView.classList.add('hidden');
+      renderFlash();
+    }
+
+    $('quiz-trigger').addEventListener('click', startQuiz);
+    $('question').closest('.panel').addEventListener('click', (event) => {
+      if (!event.target.closest('button')) { flipped = !flipped; renderFlash(); }
+    });
+    $('previous').addEventListener('click', () => { currentIndex = (currentIndex - 1 + cards.length) % cards.length; flipped = false; renderFlash(); });
+    $('next').addEventListener('click', () => { currentIndex = (currentIndex + 1) % cards.length; flipped = false; renderFlash(); });
+    $('flip').addEventListener('click', () => { flipped = !flipped; renderFlash(); });
+    $('shuffle').addEventListener('click', shuffleCards);
+    document.addEventListener('keydown', event => {
+      if (quizMode) return;
+      if (event.code === 'Space') { event.preventDefault(); flipped = !flipped; renderFlash(); }
+      if (event.key === 'ArrowLeft') $('previous').click();
+      if (event.key === 'ArrowRight') $('next').click();
+    });
+    renderFlash();
+  </script>
 </body>
 </html>
+
