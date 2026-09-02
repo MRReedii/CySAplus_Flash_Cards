@@ -325,13 +325,6 @@
         </select>
       </div>
       <div class="dev-control-group">
-        <label for="flagUpload">ENABLE_UPLOAD</label>
-        <select id="flagUpload" class="dev-select" onchange="updateFeatureFlag('ENABLE_UPLOAD', this.value)">
-          <option value="false">Disabled (false)</option>
-          <option value="true">Enabled (true)</option>
-        </select>
-      </div>
-      <div class="dev-control-group">
         <label for="flagProgress">ENABLE_PROGRESS_TRACKING</label>
         <select id="flagProgress" class="dev-select" onchange="updateFeatureFlag('ENABLE_PROGRESS_TRACKING', this.value)">
           <option value="false">Disabled (false)</option>
@@ -397,7 +390,7 @@
   </div>
 
   <!-- FEATURE: UPLOAD -->
-  <div class="glass-panel feature-in-dev feature-upload">
+  <div class="glass-panel feature-upload">
     <div class="section-title">
       <span>📤 Upload Question Set</span>
       <span style="font-size: 0.75rem; opacity: 0.6; font-weight: normal;">Accepts .json</span>
@@ -532,17 +525,14 @@
   // Re-evaluates CSS classes based on active feature flags
   function applyFeatureFlags() {
     // First hide all feature nodes
-    document.querySelectorAll('.feature-continue, .feature-upload, .feature-topics, .feature-progress, .feature-materials').forEach(el => {
+    document.querySelectorAll('.feature-continue, .feature-topics, .feature-progress, .feature-materials').forEach(el => {
       el.classList.add('feature-in-dev');
     });
 
     // Check conditions to unhide elements
     if (FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES) {
-      document.querySelectorAll('.feature-continue, .feature-upload, .feature-topics, .feature-progress, .feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
+      document.querySelectorAll('.feature-continue, .feature-topics, .feature-progress, .feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
     } else {
-      if (FEATURE_FLAGS.ENABLE_UPLOAD) {
-        document.querySelectorAll('.feature-upload').forEach(el => el.classList.remove('feature-in-dev'));
-      }
       if (FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING) {
         document.querySelectorAll('.feature-progress, .feature-continue').forEach(el => el.classList.remove('feature-in-dev'));
       }
@@ -558,7 +548,6 @@
   // Sync developer panel dropdown selectors with active state
   function syncDevControlSelects() {
     document.getElementById('flagShowAll').value = String(FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES);
-    document.getElementById('flagUpload').value = String(FEATURE_FLAGS.ENABLE_UPLOAD);
     document.getElementById('flagProgress').value = String(FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING);
     document.getElementById('flagTopics').value = String(FEATURE_FLAGS.ENABLE_TOPIC_BROWSING);
     document.getElementById('flagMaterials').value = String(FEATURE_FLAGS.ENABLE_STUDY_MATERIALS);
