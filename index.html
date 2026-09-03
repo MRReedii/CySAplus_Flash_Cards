@@ -1,280 +1,1562 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CySA+ Flashcards</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Poppins,sans-serif;background:linear-gradient(135deg,#08111f,#1a1147,#0d6efd);background-size:300% 300%;animation:bg 12s ease infinite;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;overflow:hidden}
-@keyframes bg{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.bg span{position:absolute;border-radius:50%;background:#ffffff12;animation:f 18s linear infinite}
-.bg span:nth-child(1){width:220px;height:220px;left:8%;top:15%}
-.bg span:nth-child(2){width:120px;height:120px;right:10%;top:20%}
-.bg span:nth-child(3){width:180px;height:180px;left:60%;bottom:5%}
-@keyframes f{50%{transform:translateY(-30px)}}
-.wrap{width:min(900px,92vw)}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.logo{font-size:2rem;font-weight:700}
-.badge{background:#ffffff20;padding:10px 18px;border-radius:999px;backdrop-filter:blur(12px)}
-.card{background:#ffffff18;border:1px solid #ffffff30;border-radius:24px;padding:36px;min-height:380px;max-height:65vh;overflow-y:auto;backdrop-filter:blur(18px);box-shadow:0 20px 60px #0006;display:flex;flex-direction:column;justify-content:space-between;transition:.35s;cursor:pointer}
-.card:hover{transform:translateY(-4px) scale(1.005)}
-h2{font-size:1.15rem;font-weight:500;line-height:1.6;white-space:pre-wrap;text-align:left;margin:0 0 20px 0}
-p{opacity:.7;font-size:0.9rem;margin:0;text-align:right}
-.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
-button{border:none;border-radius:14px;padding:16px;font:inherit;font-weight:600;background:linear-gradient(135deg,#00d4ff,#6d5dfc);color:#fff;cursor:pointer;transition:.2s}
-button:hover{transform:translateY(-3px);box-shadow:0 10px 25px #0005}
-.progress{height:10px;background:#ffffff22;border-radius:99px;overflow:hidden;margin:20px 0}
-.bar{height:100%;width:2%;background:linear-gradient(90deg,#00ffd0,#00a2ff);transition:width .2s}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CySA+ Study Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #08111f, #1a1147, #0d6efd);
+      background-size: 300% 300%;
+      animation: bg 12s ease infinite;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 20px;
+      overflow-x: hidden;
+    }
+    @keyframes bg {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Background animation elements */
+    .bg span { position: fixed; border-radius: 50%; background: #ffffff12; animation: f 18s linear infinite; pointer-events: none; z-index: 0; }
+    .bg span:nth-child(1) { width: 220px; height: 220px; left: 8%; top: 15%; }
+    .bg span:nth-child(2) { width: 120px; height: 120px; right: 10%; top: 20%; }
+    .bg span:nth-child(3) { width: 180px; height: 180px; left: 60%; bottom: 5%; }
+    @keyframes f { 50% { transform: translateY(-30px); } }
+
+    /* Feature Flag & View Visibility Rules */
+    .feature-in-dev { display: none !important; }
+    .hidden { display: none !important; }
+    .view { display: none; width: min(960px, 100%); z-index: 1; flex-direction: column; gap: 20px; }
+    .view.active { display: flex; }
+
+    /* Compact App Top Bar */
+    .app-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 0px;
+    }
+    .user-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      opacity: 0.85;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Sleek Mini Status Badge */
+    .badge-mini {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge-online { background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); }
+    .badge-offline { background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); }
+
+    /* Developer Control Header */
+    .dev-header {
+      width: min(960px, 100%);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed #00d4ff;
+      border-radius: 20px;
+      padding: 16px 20px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(14px);
+      margin-bottom: 16px;
+      z-index: 10;
+    }
+    .dev-header.visible { display: flex; }
+    .dev-header-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #00d4ff;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dev-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .dev-control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .dev-control-group label {
+      font-size: 0.72rem;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+    .dev-select {
+      background: #ffffff18;
+      color: #fff;
+      border: 1px solid #ffffff30;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .dev-select option { background: #08111f; color: #fff; }
+
+    /* UI Containers */
+    .glass-panel {
+      background: #ffffff18;
+      border: 1px solid #ffffff30;
+      border-radius: 20px;
+      padding: 22px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 15px 40px #0005;
+    }
+    .card {
+      background: #ffffff18;
+      border: 1px solid #ffffff30;
+      border-radius: 24px;
+      padding: 32px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 60px #0006;
+      transition: .35s;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Auth Overlay Container */
+    #auth-view { width: 100%; max-width: 480px; margin: 0 auto; z-index: 2; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; color: #fff; user-select: none; }
+    h2 { font-size: 1rem; font-weight: 500; margin-bottom: 18px; color: #ddd; }
+
+    /* Inputs & Buttons */
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #ffffff30;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input::placeholder { color: rgba(255, 255, 255, 0.4); }
+    input:focus { border-color: #00d4ff; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px #0004; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: linear-gradient(135deg, #00d4ff, #6d5dfc); color: #fff; }
+    .btn-secondary { background: #ffffff20; color: #fff; border: 1px solid #ffffff30; }
+    .btn-secondary:hover { background: #ffffff30; transform: translateY(-2px); }
+    .btn-guest { background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; }
+    .btn-google { background: #fff; color: #333; }
+    .btn-apple { background: #000; color: #fff; border: 1px solid #444; }
+    .btn-ms { background: #2f2f2f; color: #fff; }
+    .btn-github { background: #24292e; color: #fff; }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid #ffffff40; }
+
+    .divider {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.75rem;
+      margin: 6px 0 12px;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    /* Hub Layout & Compact Hero Header */
+    .hero-panel { text-align: center; padding: 18px 16px; }
+    .hero-logo { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.03em; margin-bottom: 4px; cursor: pointer; user-select: none; }
+    .hero-tagline { opacity: 0.8; font-size: 0.85rem; max-width: 480px; margin: 0 auto; line-height: 1.4; }
+
+    .grid-decks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .deck-card {
+      background: #ffffff12;
+      border: 1px solid #ffffff20;
+      border-radius: 16px;
+      padding: 18px;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .deck-card:hover { transform: translateY(-3px); background: #ffffff20; border-color: #ffffff40; }
+    .deck-title { font-weight: 600; font-size: 1rem; margin-bottom: 2px; }
+    .deck-meta { opacity: 0.7; font-size: 0.82rem; margin-bottom: 8px; }
+    .deck-description { font-size: 0.82rem; opacity: 0.8; line-height: 1.4; margin-bottom: 14px; }
+
+    .upload-box {
+      border: 2px dashed #00d4ff;
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .upload-box:hover {
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.08);
+    }
+    .upload-icon { font-size: 1.5rem; margin-bottom: 4px; }
+    .upload-text { font-size: 0.82rem; opacity: 0.8; margin-bottom: 10px; }
+
+    /* Upload / Import Workspace */
+    #uploadView { width: min(960px, 100%); }
+
+    .upload-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .upload-header .badge { white-space: nowrap; }
+
+    .upload-intro { padding: 24px; }
+    .upload-intro h1 { margin-bottom: 4px; }
+    .upload-intro p {
+      opacity: 0.72;
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .upload-workspace { display: grid; gap: 18px; }
+
+    .upload-box {
+      border: 2px dashed #00d4ff;
+      border-radius: 18px;
+      padding: 42px 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      margin-top: 0;
+    }
+
+    .upload-box:hover,
+    .upload-box.drag-over {
+      background: rgba(0, 212, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-text { font-size: 0.88rem; opacity: 0.8; margin-bottom: 14px; }
+    .upload-filename { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; }
+
+    .import-section { padding: 22px; }
+
+    .import-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .import-section-header h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    .import-section-header span {
+      font-size: 0.72rem;
+      opacity: 0.6;
+    }
+
+    .import-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .import-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .import-field label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .import-field input,
+    .import-field select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid #ffffff30;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.86rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .import-field select option { background: #08111f; color: #fff; }
+
+    .import-field input:focus,
+    .import-field select:focus { border-color: #00d4ff; }
+
+    .import-checks {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .import-check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.82rem;
+      opacity: 0.88;
+    }
+
+    .import-check input {
+      width: auto;
+      margin: 0;
+      accent-color: #00d4ff;
+    }
+
+    .import-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .import-stat {
+      padding: 12px;
+      border-radius: 12px;
+      background: #ffffff10;
+      border: 1px solid #ffffff18;
+      text-align: center;
+    }
+
+    .import-stat strong { display: block; font-size: 1.05rem; }
+    .import-stat span {
+      display: block;
+      font-size: 0.7rem;
+      opacity: 0.62;
+      margin-top: 2px;
+    }
+
+    .import-preview {
+      max-height: 280px;
+      overflow-y: auto;
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .preview-item {
+      background: #ffffff0d;
+      border: 1px solid #ffffff18;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .preview-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.72rem;
+      opacity: 0.65;
+    }
+
+    .import-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .import-actions .btn {
+      width: auto;
+      min-width: 150px;
+      margin-bottom: 0;
+    }
+
+    .import-status {
+      font-size: 0.78rem;
+      opacity: 0.72;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .import-grid { grid-template-columns: 1fr; }
+      .import-stats { grid-template-columns: 1fr; }
+      .import-actions { flex-direction: column; }
+      .import-actions .btn { width: 100%; }
+    }
+
+    /* Footer Inline Link */
+    .footer-text {
+      text-align: center;
+      font-size: 0.75rem;
+      margin-top: 12px;
+      opacity: 0.8;
+    }
+    .footer-text span.footer-base {
+      opacity: 0.6;
+    }
+    .upload-link {
+      color: #00d4ff;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 4px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    .upload-link:hover {
+      color: #fff;
+    }
+
+    /* Continue Studying Card */
+    .continue-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, #ffffff25, #ffffff10);
+    }
+    .continue-info h3 { margin: 0 0 6px 0; font-size: 1.15rem; }
+    .continue-info p { margin: 0; opacity: 0.7; font-size: 0.9rem; }
+    .continue-progress { min-width: 160px; flex: 1; max-width: 220px; }
+    .progress-bar-container { height: 10px; background: #ffffff22; border-radius: 99px; overflow: hidden; margin-top: 8px; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #00ffd0, #00a2ff); border-radius: 99px; }
+
+    /* Topic Pills */
+    .grid-topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .topic-card {
+      background: #ffffff10;
+      border: 1px solid #ffffff20;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .topic-card:hover { background: #ffffff25; transform: translateY(-2px); }
+
+    /* Progress Metrics */
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .progress-row { display: flex; flex-direction: column; gap: 14px; }
+    .progress-item { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; }
+    .progress-label { width: 110px; font-weight: 500; flex-shrink: 0; }
+    .progress-bar-flex { flex-grow: 1; }
+    .progress-percent { width: 42px; text-align: right; font-weight: 600; font-size: 0.85rem; opacity: 0.9; }
+
+    /* Community Activity */
+    .activity-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+    .activity-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #ffffff15;
+      font-size: 0.9rem;
+      gap: 12px;
+    }
+    .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .activity-user { font-weight: 500; }
+    .activity-time { opacity: 0.5; font-size: 0.8rem; white-space: nowrap; }
+
+    /* Study Materials Tabs */
+    .nav-tabs { display: flex; gap: 10px; border-bottom: 1px solid #ffffff20; padding-bottom: 12px; margin-bottom: 16px; overflow-x: auto; }
+    .tab-item {
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: #ffffff10;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .tab-item.active { background: #ffffff30; }
+    .tab-item:hover { background: #ffffff25; }
+
+    /* Flashcard Viewer Header & Controls */
+    .header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .badge { background: #ffffff20; padding: 6px 14px; border-radius: 999px; backdrop-filter: blur(12px); font-size: 0.8rem; }
+    .study-card {
+      background: #ffffff18;
+      border: 1px solid #ffffff30;
+      border-radius: 20px;
+      padding: 28px;
+      min-height: 340px;
+      max-height: 60vh;
+      overflow-y: auto;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 20px 60px #0006;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .study-card h2 { font-size: 1.05rem; font-weight: 500; line-height: 1.5; white-space: pre-wrap; text-align: left; margin: 0 0 16px 0; }
+    .study-card p { opacity: .7; font-size: 0.85rem; margin: 0; text-align: right; }
+    .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .progress { height: 8px; background: #ffffff22; border-radius: 99px; overflow: hidden; }
+    .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffd0, #00a2ff); transition: width .2s; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(20, 20, 30, 0.9);
+      border: 1px solid #ffffff30;
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+      box-shadow: 0 10px 30px #0008;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .continue-card { flex-direction: column; align-items: stretch; }
+      .continue-progress { max-width: none; }
+      .controls { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
 <body>
+
 <div class="bg"><span></span><span></span><span></span></div>
-<div class="wrap">
-  <div class="header">
-    <div class="logo">🛡 CySA+ Flashcards</div>
-    <div class="badge">Question <span id="qnum">1</span>/50</div>
+
+<div style="width: 100%; max-width: 960px; z-index: 1;">
+
+  <!-- HIDDEN DEVELOPER HEADER CONTROLS -->
+  <div class="dev-header" id="devHeader">
+    <div class="dev-header-title">
+      <span>🛠 Feature Flag Controls</span>
+      <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal; text-transform: none;">Click logo 5x to hide</span>
+    </div>
+    <div class="dev-controls-grid">
+      <div class="dev-control-group">
+        <label for="flagAuth">ENABLE_AUTH (Sign In)</label>
+        <select id="flagAuth" class="dev-select" onchange="updateFeatureFlag('ENABLE_AUTH', this.value)">
+          <option value="false">Disabled (Hidden)</option>
+          <option value="true">Enabled (Required)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagShowAll">SHOW_ALL_DEV_FEATURES</label>
+        <select id="flagShowAll" class="dev-select" onchange="updateFeatureFlag('SHOW_ALL_DEV_FEATURES', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagApple">ENABLE_APPLE_AUTH</label>
+        <select id="flagApple" class="dev-select" onchange="updateFeatureFlag('ENABLE_APPLE_AUTH', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagMS">ENABLE_MS_AUTH</label>
+        <select id="flagMS" class="dev-select" onchange="updateFeatureFlag('ENABLE_MS_AUTH', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagProgress">ENABLE_PROGRESS_TRACKING</label>
+        <select id="flagProgress" class="dev-select" onchange="updateFeatureFlag('ENABLE_PROGRESS_TRACKING', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagTopics">ENABLE_TOPIC_BROWSING</label>
+        <select id="flagTopics" class="dev-select" onchange="updateFeatureFlag('ENABLE_TOPIC_BROWSING', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+      <div class="dev-control-group">
+        <label for="flagMaterials">ENABLE_STUDY_MATERIALS</label>
+        <select id="flagMaterials" class="dev-select" onchange="updateFeatureFlag('ENABLE_STUDY_MATERIALS', this.value)">
+          <option value="false">Disabled (false)</option>
+          <option value="true">Enabled (true)</option>
+        </select>
+      </div>
+    </div>
   </div>
-  <div class="progress"><div class="bar" id="bar"></div></div>
-  <div class="card" id="card" onclick="flip()">
-    <h2 id="title">Question Loading...</h2>
-    <p id="hint">Click to flip</p>
+
+  <!-- AUTH VIEW (Gated by ENABLE_AUTH flag) -->
+  <div id="auth-view" class="view">
+    <div class="card">
+      <h1>Welcome</h1>
+      <h2>Sign in to continue</h2>
+
+      <button id="btn-guest" class="btn btn-guest">👤 &nbsp;Continue as Guest</button>
+      <div class="divider">or sign in with email</div>
+
+      <input id="email" type="email" placeholder="Email address" />
+      <input id="password" type="password" placeholder="Password" />
+      <button id="btn-signin" class="btn btn-primary">Sign In with Email</button>
+      <button id="btn-signup" class="btn btn-outline">Create Account</button>
+
+      <div class="divider">or continue with provider</div>
+
+      <button class="btn btn-google" data-provider="google">🔵 &nbsp;Continue with Google</button>
+      <button class="btn btn-apple feature-in-dev feature-apple" data-provider="apple">🍎 &nbsp;Continue with Apple</button>
+      <button class="btn btn-ms feature-in-dev feature-ms" data-provider="azure">🪟 &nbsp;Continue with Microsoft</button>
+      <button class="btn btn-github" data-provider="github">🐙 &nbsp;Continue with GitHub</button>
+    </div>
   </div>
-  <div class="controls">
-    <button onclick="prev()">⬅ Previous</button>
-    <button onclick="flip()">🔄 Flip</button>
-    <button onclick="next()">Next ➡</button>
-    <button onclick="shuffle()">🎲 Shuffle</button>
+
+  <!-- HUB VIEW -->
+  <div id="hubView" class="view active">
+
+    <!-- Compact Floating Top Navigation Bar -->
+    <div class="app-topbar">
+      <div class="user-pill" id="userPill" onclick="handleUserPillClick()">
+        <span style="opacity: 0.6;">👤</span>
+        <span id="user-display">Guest Mode</span>
+      </div>
+      <span id="status-badge" class="badge-mini badge-online">● Online</span>
+    </div>
+
+    <!-- TIGHTENED HERO HEADER -->
+    <div class="glass-panel hero-panel">
+      <div class="hero-logo" id="heroTitle" onclick="handleTitleClick()">🛡 CYSA+ STUDY HUB</div>
+      <div class="hero-tagline">Shared cybersecurity question sets and study materials for our cohort. Study together. Share what works.</div>
+    </div>
+
+    <!-- FEATURE: Continue Studying Card -->
+    <div class="glass-panel continue-card feature-in-dev feature-continue">
+      <div class="continue-info">
+        <div style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.05em; margin-bottom: 4px;">Jump Back In</div>
+        <h3>CySA+ Main Flashcard Deck</h3>
+        <p>Question 37 of 50</p>
+      </div>
+      <div class="continue-progress">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500;">
+          <span>Progress</span>
+          <span>74%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 74%;"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width: auto; margin-bottom: 0;" onclick="startDeck('default')">Resume</button>
+    </div>
+
+    <!-- AVAILABLE QUESTION SETS -->
+    <div>
+      <div class="section-title">📚 Available Question Sets</div>
+      <div class="grid-decks" id="decksContainer">
+        <div class="deck-card">
+          <div>
+            <div class="deck-title">🛡 CySA+ Comprehensive Deck</div>
+            <div class="deck-meta" id="defaultDeckMeta">Loading Deck... · Official Cohort Set</div>
+            <div class="deck-description">Covers incident response, beaconing, SASE, EDR, threat intelligence, and vulnerability management.</div>
+          </div>
+          <button class="btn btn-primary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('default')">Start Practice</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURE: Browse By Topic -->
+    <div class="feature-in-dev feature-topics">
+      <div class="section-title">🎯 Browse by Topic</div>
+      <div class="grid-topics">
+        <div class="topic-card" onclick="startDeck('default')"><span>🌐 Network Security</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>🔎 Threat Intelligence</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>🛡 Vulnerability Mgmt</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>💻 Application Security</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>🚨 Incident Response</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>🔍 Digital Forensics</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>⚙️ Security Operations</span> <span>➔</span></div>
+        <div class="topic-card" onclick="startDeck('default')"><span>📊 Reporting & Metrics</span> <span>➔</span></div>
+      </div>
+    </div>
+
+    <!-- FEATURE: Progress & Activity -->
+    <div class="feature-in-dev feature-progress">
+      <div class="split-grid">
+        <!-- Your Progress -->
+        <div class="glass-panel">
+          <div class="section-title">📊 Your Progress</div>
+          <div class="progress-row">
+            <div class="progress-item">
+              <div class="progress-label">CySA+</div>
+              <div class="progress-bar-flex">
+                <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 72%;"></div></div>
+              </div>
+              <div class="progress-percent">72%</div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label">Networking</div>
+              <div class="progress-bar-flex">
+                <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 45%;"></div></div>
+              </div>
+              <div class="progress-percent">45%</div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label">Splunk</div>
+              <div class="progress-bar-flex">
+                <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 28%;"></div></div>
+              </div>
+              <div class="progress-percent">28%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community Activity -->
+        <div class="glass-panel">
+          <div class="section-title">👥 Community Activity</div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div><span class="activity-user">Sarah</span> added "Incident Response Questions"</div>
+              <div class="activity-time">12m ago</div>
+            </div>
+            <div class="activity-item">
+              <div><span class="activity-user">Mike</span> added "Networking Review"</div>
+              <div class="activity-time">1h ago</div>
+            </div>
+            <div class="activity-item">
+              <div><span class="activity-user">Jamal</span> added "Splunk Fundamentals"</div>
+              <div class="activity-time">yesterday</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; margin-bottom: 0;" onclick="openUploadModal()">+ Share a Study Set</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURE: Study Materials Tabs -->
+    <div class="glass-panel feature-in-dev feature-materials">
+      <div class="section-title">📖 Study Materials</div>
+      <div class="nav-tabs">
+        <button class="tab-item active" onclick="switchMaterialTab(this)">Flashcards</button>
+        <button class="tab-item" onclick="switchMaterialTab(this)">Practice Questions</button>
+        <button class="tab-item" onclick="switchMaterialTab(this)">Notes & Guides</button>
+        <button class="tab-item" onclick="switchMaterialTab(this)">External Resources</button>
+      </div>
+      <div id="materialsContent" style="font-size: 0.85rem; opacity: 0.85; line-height: 1.6;">
+        Access student-curated reference guides, Wireshark packet analysis walk-throughs, Packet Tracer configurations, and cheatsheets shared across the cohort.
+      </div>
+    </div>
+
+    <!-- FOOTER WITH INLINE UPLOAD TRIGGER -->
+    <div class="footer-text">
+      <span class="footer-base">Built by students, for students.</span> 
+      <span class="upload-link" onclick="openUploadModal()">Upload a Question Set Now</span>
+    </div>
   </div>
+
+  <!-- UPLOAD / IMPORT WORKSPACE -->
+  <div id="uploadView" class="view">
+    <div class="upload-header">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="showHub()">⬅ Back to Hub</button>
+      <div class="badge">📤 Question Set Import</div>
+    </div>
+
+    <div class="glass-panel upload-intro">
+      <h1>📤 Upload Question Set</h1>
+      <p>Import a JSON question set, review what was detected, and refine the data before adding it to your study hub.</p>
+    </div>
+
+    <div class="upload-workspace">
+      <div class="glass-panel">
+        <div class="section-title">
+          <span>1. Select Question Set</span>
+          <span style="font-size: 0.7rem; opacity: 0.6; font-weight: normal;">JSON ONLY</span>
+        </div>
+
+        <div class="upload-box" id="uploadDropZone"
+             onclick="document.getElementById('jsonFileInput').click()">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">Drag & drop your question set JSON here, or click to browse</div>
+          <button class="btn btn-secondary" type="button" style="width: auto; margin-bottom: 0;"
+                  onclick="event.stopPropagation(); document.getElementById('jsonFileInput').click()">
+            Select JSON File
+          </button>
+          <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+          <div id="uploadFilename" class="upload-filename"></div>
+        </div>
+      </div>
+
+      <div id="importReview" class="glass-panel import-section hidden">
+        <div class="import-section-header">
+          <h3>2. Review Imported Data</h3>
+          <span id="importStatusLabel">READY FOR REVIEW</span>
+        </div>
+
+        <div class="import-stats">
+          <div class="import-stat">
+            <strong id="importQuestionCount">0</strong>
+            <span>Questions</span>
+          </div>
+          <div class="import-stat">
+            <strong id="importCategoryCount">—</strong>
+            <span>Categories</span>
+          </div>
+          <div class="import-stat">
+            <strong id="importFormatStatus">✓</strong>
+            <span>JSON Format</span>
+          </div>
+        </div>
+
+        <div class="import-grid" style="margin-top: 16px;">
+          <div class="import-field">
+            <label for="importDeckName">Deck Name</label>
+            <input id="importDeckName" type="text" placeholder="Question Set Name">
+          </div>
+
+          <div class="import-field">
+            <label for="importCategory">Category</label>
+            <select id="importCategory">
+              <option value="auto">Auto Detect</option>
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="networking">Networking</option>
+              <option value="threat-intelligence">Threat Intelligence</option>
+              <option value="incident-response">Incident Response</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="import-field">
+            <label for="importDifficulty">Difficulty</label>
+            <select id="importDifficulty">
+              <option value="original">Keep Original</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div class="import-field">
+            <label for="importQuestionType">Question Type</label>
+            <select id="importQuestionType">
+              <option value="auto">Auto Detect</option>
+              <option value="multiple-choice">Multiple Choice</option>
+              <option value="true-false">True / False</option>
+              <option value="open-ended">Open Ended</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="import-checks">
+          <label class="import-check">
+            <input type="checkbox" id="chkOffline" checked>
+            <span>Save locally for offline use</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkPublic">
+            <span>Make public — publish to IPFS via Pinata</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkValidate" checked>
+            <span>Validate questions before importing</span>
+          </label>
+          <label class="import-check">
+            <input type="checkbox" id="chkPreserveMetadata" checked>
+            <span>Preserve original metadata</span>
+          </label>
+        </div>
+
+        <div class="section-title" style="margin-top: 22px;">
+          <span>Preview</span>
+          <span id="previewCount">0 shown</span>
+        </div>
+        <div id="importPreview" class="import-preview"></div>
+        <div id="importStatus" class="import-status"></div>
+
+        <div class="import-actions" style="margin-top: 18px;">
+          <button class="btn btn-secondary" onclick="resetImportView()">Clear & Start Over</button>
+          <button class="btn btn-primary" onclick="confirmImport()">Import Question Set</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDY VIEW -->
+  <div id="studyView" class="view">
+    <div class="header">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="showHub()">⬅ Back to Hub</button>
+      <div class="badge"><span id="deckTitleDisplay">CySA+ Flashcards</span> · Question <span id="qnum">1</span>/<span id="qtotal">50</span></div>
+    </div>
+
+    <div class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="study-card" id="card" onclick="flip()">
+      <h2 id="title">Question Loading...</h2>
+      <p id="hint">Click to flip</p>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="prev()">⬅ Prev</button>
+      <button class="btn btn-primary" onclick="flip()">🔄 Flip</button>
+      <button class="btn btn-primary" onclick="next()">Next ➡</button>
+      <button class="btn btn-primary" onclick="shuffle()">🎲 Shuffle</button>
+    </div>
+  </div>
+
 </div>
 
+<div id="toast"></div>
+
 <script>
-const cards = [
-  {
-    q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution",
-    a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline."
-  },
-  {
-    q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking",
-    a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors."
-  },
-  {
-    q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity",
-    a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing."
-  },
-  {
-    q: "4. A network design routes corporate security policies directly through cloud edge elements, replacing standard physical firewalls. What architecture is this?\n\nA) SDN\nB) SASE\nC) Hybrid PKI\nD) Zero Trust",
-    a: "Correct Answer: B\n\nRationale: SASE fuses software-defined routing with cloud-delivered edge security functions like firewalls and brokers."
-  },
-  {
-    q: "5. Which protocol establishes centralized cryptographic credentials to let users access multiple disparate company resources through one initial authentication?\n\nA) Federation\nB) SSO\nC) PAM\nD) MFA",
-    a: "Correct Answer: B\n\nRationale: Single Sign-On (SSO) lets users authenticate once to access multiple separate systems securely."
-  },
-  {
-    q: "6. An engineer deploys a gateway utility to decrypt inbound traffic, inspect the files for active malware, and re-encrypt the data before internal delivery. What technique is this?\n\nA) SASE orchestration\nB) SSL inspection\nC) PKI certification management\nD) Data loss prevention",
-    a: "Correct Answer: B\n\nRationale: SSL inspection decrypts encrypted network traffic at a gateway to scan for threats before re-encrypting it."
-  },
-  {
-    q: "7. While auditing network metrics, an analyst notes a sudden massive surge in point-to-point connections directly between client laptops. What is this?\n\nA) Authorized serverless compute calls\nB) Irregular peer-to-peer communication\nC) Application-related service interruption\nD) Network beaconing activity",
-    a: "Correct Answer: B\n\nRationale: Direct workstation-to-workstation traffic breaks standard client-server models, signaling lateral movement."
-  },
-  {
-    q: "8. Which item stores low-level operating system configurations and is routinely monitored for malware persistence mechanisms like Run and RunOnce keys?\n\nA) File structures configuration locations\nB) System process hollowing nodes\nC) Windows Registry\nD) Hardware architecture firmware",
-    a: "Correct Answer: C\n\nRationale: The Windows Registry houses system configurations; malware uses its Run keys to maintain persistence."
-  },
-  {
-    q: "9. A security tool automatically runs an endpoint isolation routine immediately after discovering a valid file hash signature. What platform handled this?\n\nA) SIEM\nB) SOAR\nC) EDR\nD) CASB",
-    a: "Correct Answer: C\n\nRationale: Endpoint Detection and Response (EDR) agents actively record system behaviors and can automatically isolate individual hosts."
-  },
-  {
-    q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto",
-    a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address."
-  },
-  {
-    q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings",
-    a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions."
-  },
-  {
-    q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat",
-    a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns."
-  },
-  {
-    q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment",
-    a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence."
-  },
-  {
-    q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass",
-    a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods."
-  },
-  {
-    q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering",
-    a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators."
-  },
-  {
-    q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment",
-    a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code."
-  },
-  {
-    q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing",
-    a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations."
-  },
-  {
-    q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling",
-    a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions."
-  },
-  {
-    q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices",
-    a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines."
-  },
-  {
-    q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series",
-    a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers."
-  },
-  {
-    q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS",
-    a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields."
-  },
-  {
-    q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB",
-    a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance."
-  },
-  {
-    q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction",
-    a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability."
-  },
-  {
-    q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative",
-    a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system."
-  },
-  {
-    q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability",
-    a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands."
-  },
-  {
-    q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration",
-    a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control."
-  },
-  {
-    q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow",
-    a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files."
-  },
-  {
-    q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation",
-    a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures."
-  },
-  {
-    q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint",
-    a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately."
-  },
-  {
-    q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management",
-    a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks."
-  },
-  {
-    q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide",
-    a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish."
-  },
-  {
-    q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK",
-    a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions."
-  },
-  {
-    q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis",
-    a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court."
-  },
-  {
-    q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training",
-    a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection."
-  },
-  {
-    q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan",
-    a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation."
-  },
-  {
-    q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment",
-    a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally."
-  },
-  {
-    q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation",
-    a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines."
-  },
-  {
-    q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan",
-    a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents."
-  },
-  {
-    q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition",
-    a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans."
-  },
-  {
-    q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management",
-    a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed."
-  },
-  {
-    q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure",
-    a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation."
-  },
-  {
-    q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary",
-    a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership."
-  },
-  {
-    q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)",
-    a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified."
-  },
-  {
-    q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends",
-    a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed."
-  },
-  {
-    q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan",
-    a: "Correct Answer: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines."
-  },
-  {
-    q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing",
-    a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards."
-  },
-  {
-    q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory",
-    a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach."
-  },
-  {
-    q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels",
-    a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs."
-  },
-  {
-    q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody",
-    a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time."
-  },
-  {
-    q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation",
-    a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds."
+  // VERCEL API ENDPOINT FOR PINATA IPFS UPLOAD
+  const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
+
+  async function pinataIpfsUpload(fileData) {
+    try {
+      toast("Uploading to Pinata IPFS via Vercel...");
+      const response = await fetch(VERCEL_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fileData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      toast("Successfully uploaded to IPFS!");
+      return result;
+    } catch (err) {
+      toast("Pinata IPFS upload failed");
+      console.error("Error uploading to Vercel Pinata endpoint:", err);
+      throw err;
+    }
   }
-];
 
-let i = 0, s = false;
+  // DEFAULT IPFS CONFIGURATION
+  const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
+  const IPFS_GATEWAY = "https://harlequin-bitter-booby-228.mypinata.cloud/ipfs/";
 
-function render() {
-  document.getElementById("title").textContent = s ? cards[i].a : cards[i].q;
-  document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
-  document.getElementById("qnum").textContent = i + 1;
-  document.getElementById("bar").style.width = ((i + 1) / cards.length * 100) + "%";
-  document.getElementById("card").scrollTop = 0;
-}
+  // FEATURE FLAGS CONFIGURATION
+  const FEATURE_FLAGS = {
+    ENABLE_AUTH: false,
+    SHOW_ALL_DEV_FEATURES: false,
+    ENABLE_APPLE_AUTH: false,
+    ENABLE_MS_AUTH: false,
+    ENABLE_PROGRESS_TRACKING: false,
+    ENABLE_TOPIC_BROWSING: false,
+    ENABLE_STUDY_MATERIALS: false
+  };
 
-function flip() { s = !s; render(); }
-function next() { i = (i + 1) % cards.length; s = false; render(); }
-function prev() { i = (i - 1 + cards.length) % cards.length; s = false; render(); }
-function shuffle() { cards.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
+  function applyFeatureFlags() {
+    document.querySelectorAll('.feature-apple, .feature-ms, .feature-continue, .feature-topics, .feature-progress, .feature-materials').forEach(el => el.classList.add('feature-in-dev'));
 
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") { e.preventDefault(); flip(); }
-  if (e.key === "ArrowRight") next();
-  if (e.key === "ArrowLeft") prev();
-});
+    if (FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES) {
+      document.querySelectorAll('.feature-apple, .feature-ms, .feature-continue, .feature-topics, .feature-progress, .feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
+    } else {
+      if (FEATURE_FLAGS.ENABLE_APPLE_AUTH) document.querySelectorAll('.feature-apple').forEach(el => el.classList.remove('feature-in-dev'));
+      if (FEATURE_FLAGS.ENABLE_MS_AUTH) document.querySelectorAll('.feature-ms').forEach(el => el.classList.remove('feature-in-dev'));
+      if (FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING) document.querySelectorAll('.feature-progress, .feature-continue').forEach(el => el.classList.remove('feature-in-dev'));
+      if (FEATURE_FLAGS.ENABLE_TOPIC_BROWSING) document.querySelectorAll('.feature-topics').forEach(el => el.classList.remove('feature-in-dev'));
+      if (FEATURE_FLAGS.ENABLE_STUDY_MATERIALS) document.querySelectorAll('.feature-materials').forEach(el => el.classList.remove('feature-in-dev'));
+    }
 
-render();
+    if (FEATURE_FLAGS.ENABLE_AUTH && !currentUser) {
+      showView('auth-view');
+    } else {
+      if (document.getElementById('auth-view').classList.contains('active')) {
+        showHub();
+      }
+    }
+  }
+
+  function syncDevControlSelects() {
+    if (document.getElementById('flagAuth')) document.getElementById('flagAuth').value = String(FEATURE_FLAGS.ENABLE_AUTH);
+    if (document.getElementById('flagShowAll')) document.getElementById('flagShowAll').value = String(FEATURE_FLAGS.SHOW_ALL_DEV_FEATURES);
+    if (document.getElementById('flagApple')) document.getElementById('flagApple').value = String(FEATURE_FLAGS.ENABLE_APPLE_AUTH);
+    if (document.getElementById('flagMS')) document.getElementById('flagMS').value = String(FEATURE_FLAGS.ENABLE_MS_AUTH);
+    if (document.getElementById('flagProgress')) document.getElementById('flagProgress').value = String(FEATURE_FLAGS.ENABLE_PROGRESS_TRACKING);
+    if (document.getElementById('flagTopics')) document.getElementById('flagTopics').value = String(FEATURE_FLAGS.ENABLE_TOPIC_BROWSING);
+    if (document.getElementById('flagMaterials')) document.getElementById('flagMaterials').value = String(FEATURE_FLAGS.ENABLE_STUDY_MATERIALS);
+  }
+
+  function updateFeatureFlag(flagName, valueStr) {
+    FEATURE_FLAGS[flagName] = valueStr === 'true';
+    applyFeatureFlags();
+    syncDevControlSelects();
+  }
+
+  // SECRET 5-CLICK TITLE TRAP
+  let titleClickCount = 0;
+  let titleClickTimer = null;
+
+  function handleTitleClick() {
+    titleClickCount++;
+    clearTimeout(titleClickTimer);
+    titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 1500);
+
+    if (titleClickCount >= 5) {
+      titleClickCount = 0;
+      document.getElementById('devHeader').classList.toggle('visible');
+    }
+  }
+
+  // USER MODE TRIPLE-CLICK HANDLER FOR IPFS / REMOTE JSON
+  let userPillClicks = 0;
+  let userPillTimer = null;
+
+  function handleUserPillClick() {
+    userPillClicks++;
+    clearTimeout(userPillTimer);
+    userPillTimer = setTimeout(() => { userPillClicks = 0; }, 1200);
+
+    if (userPillClicks >= 3) {
+      userPillClicks = 0;
+      promptIpfsSource();
+    }
+  }
+
+  async function promptIpfsSource() {
+    const input = prompt("Enter an IPFS CID or full JSON URL (leave blank to clear custom decks):");
+    if (input === null) return;
+
+    let targetUrl = input.trim();
+    if (!targetUrl) {
+      toast("Resetting to default questions");
+      return;
+    }
+
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+      targetUrl = `${IPFS_GATEWAY}${targetUrl}`;
+    }
+
+    try {
+      toast("Fetching IPFS deck...");
+      const res = await fetch(targetUrl);
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const data = await res.json();
+
+      const questions = Array.isArray(data) ? data : data.questions;
+      const title = data.title || "IPFS Imported Deck";
+
+      if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        toast("Invalid deck schema");
+        return;
+      }
+
+      const deckKey = 'ipfs_' + Date.now();
+      customDecks[deckKey] = { title, questions };
+
+      renderDeckCard(deckKey, title, questions.length);
+      toast(`Loaded IPFS set: ${title}`);
+    } catch (err) {
+      toast("Failed to fetch IPFS payload");
+      console.error(err);
+    }
+  }
+
+  // TAB SWITCHER FOR STUDY MATERIALS
+  function switchMaterialTab(btn) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const content = document.getElementById('materialsContent');
+    const texts = {
+      'Flashcards': 'Access student-curated reference guides, Wireshark packet analysis walk-throughs, Packet Tracer configurations, and cheatsheets shared across the cohort.',
+      'Practice Questions': 'Extra practice sets focused on specific CySA+ domains. Upload your own or browse shared JSON decks from classmates.',
+      'Notes & Guides': 'Cohort notes, mnemonic sheets, and condensed study guides for incident response, vulnerability management, and security operations.',
+      'External Resources': 'Links to official CompTIA objectives, free labs, recommended YouTube playlists, and community tools.'
+    };
+    content.textContent = texts[btn.textContent] || texts['Flashcards'];
+  }
+
+  // UPLOAD WORKSPACE NAVIGATION
+  function openUploadModal() {
+    showView('uploadView');
+    resetImportView();
+  }
+
+  // Compatibility helper for existing callers.
+  function closeUploadModal() {
+    showHub();
+  }
+
+  function resetImportView() {
+    const review = document.getElementById('importReview');
+    const input = document.getElementById('jsonFileInput');
+
+    if (review) review.classList.add('hidden');
+    if (input) input.value = '';
+
+    document.getElementById('uploadFilename').textContent = '';
+    document.getElementById('importPreview').innerHTML = '';
+    document.getElementById('importQuestionCount').textContent = '0';
+    document.getElementById('importCategoryCount').textContent = '—';
+    document.getElementById('importFormatStatus').textContent = '✓';
+    document.getElementById('previewCount').textContent = '0 shown';
+    document.getElementById('importStatus').textContent = '';
+    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
+
+    importedQuestionSet = null;
+  }
+
+  // SUPABASE CONFIGURATION
+  const SUPABASE_URL = 'https://xwnlaiqkmtmlgzbzxmkx.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_KaWOp4v3PhGVJhQIf1wSnw_g4x2IMwN';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  let currentUser = null;
+
+  // VIEW NAVIGATION ENGINE
+  function showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+  }
+
+  function showHub() { showView('hubView'); }
+
+  // AUTHENTICATION HANDLERS
+  function continueAsGuest() {
+    currentUser = { id: 'guest', email: 'Guest Mode' };
+    document.getElementById('user-display').textContent = 'Guest Mode';
+    toast('Continuing as guest');
+    showHub();
+  }
+
+  async function emailSignIn() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { toast(error.message); return; }
+    toast('Welcome back!');
+    currentUser = data.user;
+    document.getElementById('user-display').textContent = currentUser.email;
+    showHub();
+  }
+
+  async function emailSignUp() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) { toast(error.message); return; }
+    toast('Account created!');
+    if (data.user) {
+      currentUser = data.user;
+      document.getElementById('user-display').textContent = currentUser.email;
+      showHub();
+    }
+  }
+
+  async function oauthLogin(provider) {
+    const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.href } });
+    if (error) toast(error.message);
+  }
+
+  document.getElementById('btn-guest').addEventListener('click', continueAsGuest);
+  document.getElementById('btn-signin').addEventListener('click', emailSignIn);
+  document.getElementById('btn-signup').addEventListener('click', emailSignUp);
+  document.querySelectorAll('[data-provider]').forEach(btn => {
+    btn.addEventListener('click', () => oauthLogin(btn.dataset.provider));
+  });
+
+  // FALLBACK BASELINE DATA
+  const fallbackDeck = [
+    { q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution", a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline." },
+    { q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking", a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors." },
+    { q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity", a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing." }
+  ];
+
+  let defaultDeck = fallbackDeck;
+  let customDecks = {};
+  let currentDeck = defaultDeck;
+  let i = 0, s = false;
+
+  async function loadDefaultDeckFromIPFS() {
+    const metaEl = document.getElementById('defaultDeckMeta');
+    try {
+      const res = await fetch(`${IPFS_GATEWAY}${DEFAULT_DECK_CID}`);
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const data = await res.json();
+      
+      const questions = Array.isArray(data) ? data : data.questions;
+      if (questions && Array.isArray(questions) && questions.length > 0) {
+        defaultDeck = questions;
+        if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official IPFS Set`;
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to load default deck from IPFS, using fallback dataset.", err);
+    }
+    if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
+  }
+
+  function renderDeckCard(deckKey, title, count) {
+    const container = document.getElementById('decksContainer');
+    const safeTitle = escapeHtml(title);
+    const safeCount = Number(count) || 0;
+
+    const cardHtml = `
+      <div class="deck-card">
+        <div>
+          <div class="deck-title">${safeTitle}</div>
+          <div class="deck-meta">${safeCount} Questions · User Uploaded</div>
+          <div class="deck-description">Custom imported question set.</div>
+        </div>
+        <button class="btn btn-secondary start-deck-btn" style="width: 100%; margin-bottom: 0;">Start Practice</button>
+      </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', cardHtml);
+
+    const newCardBtn = container.lastElementChild.querySelector('.start-deck-btn');
+    newCardBtn.addEventListener('click', () => startDeck(deckKey, title));
+  }
+
+  function startDeck(deckKey, titleName) {
+    if (deckKey === 'default') {
+      currentDeck = defaultDeck;
+      document.getElementById('deckTitleDisplay').textContent = "CySA+ Flashcards";
+    } else if (customDecks[deckKey]) {
+      currentDeck = customDecks[deckKey].questions;
+      document.getElementById('deckTitleDisplay').textContent = titleName || "Custom Deck";
+    }
+    i = 0; s = false;
+    render();
+    showView('studyView');
+  }
+
+  function render() {
+    if (!currentDeck || currentDeck.length === 0) return;
+    
+    const rawContent = s ? currentDeck[i].a : currentDeck[i].q;
+    const safeContent = escapeHtml(String(rawContent || '')).replace(/\n/g, '<br>');
+
+    document.getElementById("title").innerHTML = safeContent;
+    document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
+    document.getElementById("qnum").textContent = i + 1;
+    document.getElementById("qtotal").textContent = currentDeck.length;
+    document.getElementById("bar").style.width = ((i + 1) / currentDeck.length * 100) + "%";
+    document.getElementById("card").scrollTop = 0;
+  }
+
+  function flip() { s = !s; render(); }
+  function next() { i = (i + 1) % currentDeck.length; s = false; render(); }
+  function prev() { i = (i - 1 + currentDeck.length) % currentDeck.length; s = false; render(); }
+  function shuffle() { currentDeck.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
+
+  // UPLOAD / REVIEW / IMPORT WORKFLOW
+  let importedQuestionSet = null;
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById('uploadFilename').textContent = `Selected: ${file.name}`;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        const questions = Array.isArray(data) ? data : data.questions;
+        const title = data.title || file.name.replace(/\.json$/i, '');
+
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+          toast("Invalid JSON question format");
+          return;
+        }
+
+        importedQuestionSet = { raw: data, title, questions, filename: file.name };
+        prepareImportReview();
+        toast(`Loaded "${title}" — review before importing`);
+      } catch (err) {
+        console.error(err);
+        toast('Error parsing JSON file');
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  function prepareImportReview() {
+    if (!importedQuestionSet) return;
+
+    const { title, questions } = importedQuestionSet;
+    document.getElementById('importReview').classList.remove('hidden');
+    document.getElementById('importDeckName').value = title;
+    document.getElementById('importQuestionCount').textContent = questions.length;
+
+    const categories = new Set(
+      questions.map(q => typeof q === 'object' ? (q.category || q.topic || q.domain) : null).filter(Boolean)
+    );
+    document.getElementById('importCategoryCount').textContent = categories.size || '—';
+    document.getElementById('importFormatStatus').textContent = '✓ Valid';
+    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
+
+    const preview = document.getElementById('importPreview');
+    const previewQuestions = questions.slice(0, 5);
+
+    preview.innerHTML = previewQuestions.map((q, index) => {
+      const question = typeof q === 'string'
+        ? q
+        : (q.q || q.question || q.prompt || JSON.stringify(q));
+
+      return `
+        <div class="preview-item">
+          <strong>Question ${index + 1}</strong>
+          ${escapeHtml(String(question)).slice(0, 500)}
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('previewCount').textContent =
+      `${previewQuestions.length} of ${questions.length} shown`;
+
+    document.getElementById('importStatus').textContent =
+      'Review the options above before importing. More refinement controls can be added here without changing the Hub.';
+
+    document.getElementById('importReview').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
+  function confirmImport() {
+    if (!importedQuestionSet) {
+      toast('Select a JSON question set first');
+      return;
+    }
+
+    const saveOffline = document.getElementById('chkOffline').checked;
+    const savePublic = document.getElementById('chkPublic').checked;
+    const validate = document.getElementById('chkValidate').checked;
+
+    const title =
+      document.getElementById('importDeckName').value.trim() ||
+      importedQuestionSet.title;
+
+    const questions = importedQuestionSet.questions;
+
+    if (validate) {
+      const invalid = questions.filter(q => {
+        if (typeof q === 'string') return !q.trim();
+        return !(q.q || q.question || q.prompt);
+      });
+
+      if (invalid.length) {
+        document.getElementById('importStatus').textContent =
+          `Validation found ${invalid.length} question(s) without a recognizable question field.`;
+        document.getElementById('importStatusLabel').textContent = 'VALIDATION WARNING';
+        toast('Validation found incomplete questions');
+        return;
+      }
+    }
+
+    const deckKey = 'deck_' + Date.now();
+    customDecks[deckKey] = { title, questions };
+
+    if (saveOffline) {
+      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
+    }
+
+    if (savePublic) {
+      publishImportedDeck(importedQuestionSet.raw, title, deckKey);
+    } else {
+      renderDeckCard(deckKey, title, questions.length);
+      toast(`Imported "${title}"`);
+      showHub();
+    }
+  }
+
+  async function publishImportedDeck(data, title, deckKey) {
+    try {
+      toast("Publishing set to IPFS...");
+      const ipfsResult = await pinataIpfsUpload(data);
+
+      if (ipfsResult && ipfsResult.IpfsHash) {
+        toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
+      }
+
+      renderDeckCard(deckKey, title, data.questions?.length || 0);
+      showHub();
+    } catch (err) {
+      console.error(err);
+      toast("Imported locally, but IPFS publishing failed");
+      renderDeckCard(deckKey, title, data.questions?.length || 0);
+      showHub();
+    }
+  }
+
+  function escapeHtml(value) {
+    if (typeof value !== 'string') return '';
+    return value.replace(/[&<>"'`\\]/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+      '`': '&#x60;',
+      '\\': '&#x5C;'
+    }[char]));
+  }
+
+  // UTILITY HELPERS
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  function updateNetworkBadge() {
+    const badge = document.getElementById('status-badge');
+    if (navigator.onLine) {
+      badge.textContent = '● Online';
+      badge.className = 'badge-mini badge-online';
+    } else {
+      badge.textContent = '● Offline';
+      badge.className = 'badge-mini badge-offline';
+    }
+  }
+
+  window.addEventListener('online', updateNetworkBadge);
+  window.addEventListener('offline', updateNetworkBadge);
+
+  // KEYBOARD CONTROLS
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.getElementById('uploadView').classList.contains('active')) {
+      showHub();
+      return;
+    }
+    if (!document.getElementById('studyView').classList.contains('active')) return;
+    if (e.code === "Space") { e.preventDefault(); flip(); }
+    if (e.key === "ArrowRight") next();
+    if (e.key === "ArrowLeft") prev();
+  });
+
+  // DRAG & DROP FOR QUESTION SET IMPORT
+  const uploadDropZone = document.getElementById('uploadDropZone');
+
+  if (uploadDropZone) {
+    ['dragenter', 'dragover'].forEach(name => {
+      uploadDropZone.addEventListener(name, event => {
+        event.preventDefault();
+        uploadDropZone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+      uploadDropZone.addEventListener(name, event => {
+        event.preventDefault();
+        uploadDropZone.classList.remove('drag-over');
+      });
+    });
+
+    uploadDropZone.addEventListener('drop', event => {
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        toast('Please drop a JSON file');
+        return;
+      }
+
+      const input = document.getElementById('jsonFileInput');
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+      handleFileUpload({ target: input });
+    });
+  }
+
+  // INITIALIZATION
+  loadDefaultDeckFromIPFS();
+  applyFeatureFlags();
+  syncDevControlSelects();
+  updateNetworkBadge();
 </script>
 </body>
 </html>
