@@ -1274,17 +1274,24 @@
 
   function renderDeckCard(deckKey, title, count) {
     const container = document.getElementById('decksContainer');
+    const safeTitle = escapeHtml(title);
+    const safeCount = Number(count) || 0;
+
     const cardHtml = `
       <div class="deck-card">
         <div>
-          <div class="deck-title">${title}</div>
-          <div class="deck-meta">${count} Questions · User Uploaded</div>
+          <div class="deck-title">${safeTitle}</div>
+          <div class="deck-meta">${safeCount} Questions · User Uploaded</div>
           <div class="deck-description">Custom imported question set.</div>
         </div>
-        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('${deckKey}', '${title.replace(/'/g, "\\'")}')">Start Practice</button>
+        <button class="btn btn-secondary start-deck-btn" style="width: 100%; margin-bottom: 0;">Start Practice</button>
       </div>
     `;
+
     container.insertAdjacentHTML('beforeend', cardHtml);
+
+    const newCardBtn = container.lastElementChild.querySelector('.start-deck-btn');
+    newCardBtn.addEventListener('click', () => startDeck(deckKey, title));
   }
 
   function startDeck(deckKey, titleName) {
@@ -1302,7 +1309,11 @@
 
   function render() {
     if (!currentDeck || currentDeck.length === 0) return;
-    document.getElementById("title").textContent = s ? currentDeck[i].a : currentDeck[i].q;
+    
+    const rawContent = s ? currentDeck[i].a : currentDeck[i].q;
+    const safeContent = escapeHtml(String(rawContent || '')).replace(/\n/g, '<br>');
+
+    document.getElementById("title").innerHTML = safeContent;
     document.getElementById("hint").textContent = s ? "Answer / Rationale" : "Click to flip";
     document.getElementById("qnum").textContent = i + 1;
     document.getElementById("qtotal").textContent = currentDeck.length;
@@ -1458,12 +1469,15 @@
   }
 
   function escapeHtml(value) {
-    return value.replace(/[&<>"']/g, char => ({
+    if (typeof value !== 'string') return '';
+    return value.replace(/[&<>"'`\\]/g, char => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
+      '`': '&#x60;',
+      '\\': '&#x5C;'
     }[char]));
   }
 
