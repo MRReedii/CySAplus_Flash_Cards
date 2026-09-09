@@ -31,6 +31,14 @@ Now the two of us are collaborating to turn this into a small hub where members 
   * And more
 * Hosted on GitHub Pages for easy access
 
+## 📚 Open the Flashcards
+
+Visit the live application:
+
+**[CySA+ Study Hub](https://mrreedii.github.io/CySAplus_Flash_Cards/)**
+
+---
+
 ## Where We're Headed
 
 * Pull in more question sets from other students in the class
@@ -106,14 +114,6 @@ Add a corresponding `<select>` control inside the `#devHeader` element so the fe
 Apply the `feature-in-dev` CSS class along with your specific feature tag (for example, `feature-new`) to any HTML element that should be conditionally hidden or revealed.
 
 The feature visibility is then handled through `applyFeatureFlags()`.
-
----
-
-## 📚 Open the Flashcards
-
-Visit the live application:
-
-**[CySA+ Study Hub](https://mrreedii.github.io/CySAplus_Flash_Cards/)**
 
 ---
 
