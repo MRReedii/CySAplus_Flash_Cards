@@ -1263,7 +1263,7 @@
     const metaEl = document.getElementById('defaultDeckMeta');
     try {
       // 1. Fetch active CIDs and deck list from backend
-      const res = await fetch('/api/get-deck');
+      const res = await fetch('https://cy-sa-plus-flash-cards-api.vercel.app/api/get-deck');
       if (!res.ok) throw new Error(`Backend error: ${res.status}`);
       const data = await res.json();
   
