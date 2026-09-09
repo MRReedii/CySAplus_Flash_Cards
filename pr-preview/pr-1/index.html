@@ -1415,7 +1415,7 @@
     document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
 
     const preview = document.getElementById('importPreview');
-    const previewQuestions = questions.slice(0, 5);
+    const previewQuestions = questions;
 
     preview.innerHTML = previewQuestions.map((q, index) => {
       const question = typeof q === 'string'
