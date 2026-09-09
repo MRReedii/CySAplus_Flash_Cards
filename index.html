@@ -1019,6 +1019,7 @@
   // DEFAULT IPFS CONFIGURATION
   const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
   const IPFS_GATEWAY = "https://harlequin-bitter-booby-228.mypinata.cloud/ipfs/";
+  const MAX_QUESTIONS = 350;
 
   // FEATURE FLAGS CONFIGURATION
   const FEATURE_FLAGS = {
@@ -1100,7 +1101,9 @@
   }
 
   async function promptIpfsSource() {
-    const input = prompt("Enter an IPFS CID or full JSON URL (leave blank to clear custom decks):");
+    const input = prompt(
+      "Enter an IPFS CID or any JSON URL\n(leave blank to clear custom decks):"
+    );
     if (input === null) return;
 
     let targetUrl = input.trim();
@@ -1109,32 +1112,94 @@
       return;
     }
 
-    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    // Pure CID → automatically use your preferred gateway
+    const cidPattern = /^(Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z2-7]{50,}|bafk[a-z2-7]{50,})$/i;
+    if (cidPattern.test(targetUrl)) {
       targetUrl = `${IPFS_GATEWAY}${targetUrl}`;
     }
 
+    // Basic URL safety
+    if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      toast("Must be a CID or a full http/https URL");
+      return;
+    }
+
+    // Strongly prefer HTTPS (still allow HTTP if the user really wants it)
+    if (targetUrl.startsWith("http://")) {
+      const proceed = confirm(
+        "This is an insecure HTTP link.\n\nAre you sure you want to load it?"
+      );
+      if (!proceed) return;
+    }
+
     try {
-      toast("Fetching IPFS deck...");
-      const res = await fetch(targetUrl);
-      if (!res.ok) throw new Error("HTTP error " + res.status);
-      const data = await res.json();
+      toast("Fetching remote deck...");
 
-      const questions = Array.isArray(data) ? data : data.questions;
-      const title = data.title || "IPFS Imported Deck";
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 s timeout
 
-      if (!questions || !Array.isArray(questions) || questions.length === 0) {
-        toast("Invalid deck schema");
+      const res = await fetch(targetUrl, {
+        signal: controller.signal,
+        redirect: "follow"
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // Size guard (important for "any JSON")
+      const contentLength = res.headers.get("content-length");
+      if (contentLength && parseInt(contentLength, 10) > 5_000_000) { // 5 MB
+        toast("File is too large (max 5 MB)");
         return;
       }
 
-      const deckKey = 'ipfs_' + Date.now();
+      const data = await res.json();
+
+      // Flexible schema support
+      const questions = Array.isArray(data)
+        ? data
+        : (data.questions || data.cards || data.items || []);
+
+      const title = (
+        data.title ||
+        data.name ||
+        data.deckName ||
+        "Remote Deck"
+      ).toString().slice(0, 120);
+
+      if (!Array.isArray(questions) || questions.length === 0) {
+        toast("No questions found in this JSON");
+        return;
+      }
+
+      if (questions.length > MAX_QUESTIONS) {
+        toast(`Too many questions (limit is ${MAX_QUESTIONS})`);
+        return;
+      }
+
+      // Light validation – still allows many formats
+      const validCount = questions.filter(q => {
+        if (typeof q === "string") return q.trim().length > 0;
+        return q && (q.q || q.question || q.prompt || q.front || q.text);
+      }).length;
+
+      if (validCount === 0) {
+        toast("Could not recognize any valid questions");
+        return;
+      }
+
+      const deckKey = "remote_" + Date.now();
       customDecks[deckKey] = { title, questions };
 
       renderDeckCard(deckKey, title, questions.length);
-      toast(`Loaded IPFS set: ${title}`);
+      toast(`Loaded "${title}" (${questions.length} questions)`);
     } catch (err) {
-      toast("Failed to fetch IPFS payload");
       console.error(err);
+      if (err.name === "AbortError") {
+        toast("Request timed out");
+      } else {
+        toast("Failed to load remote deck");
+      }
     }
   }
 
@@ -1344,6 +1409,11 @@
 
         if (!questions || !Array.isArray(questions) || questions.length === 0) {
           toast("Invalid JSON question format");
+          return;
+        }
+
+        if (questions.length > MAX_QUESTIONS) {
+          toast(`Question set exceeds the ${MAX_QUESTIONS}-question limit`);
           return;
         }
 
