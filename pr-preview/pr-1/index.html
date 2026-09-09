@@ -1193,6 +1193,7 @@
 
       const deckKey = "remote_" + Date.now();
       customDecks[deckKey] = { title, questions };
+      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
 
       renderDeckCard(deckKey, title, questions.length);
       toast(`Loaded "${title}" (${questions.length} questions)`);
@@ -1320,6 +1321,21 @@
   let customDecks = {};
   let currentDeck = defaultDeck;
   let i = 0, s = false;
+
+  function loadSavedDecks() {
+    try {
+      const saved = localStorage.getItem('saved_custom_decks');
+      if (saved) {
+        customDecks = JSON.parse(saved);
+        Object.keys(customDecks).forEach(deckKey => {
+          const deck = customDecks[deckKey];
+          renderDeckCard(deckKey, deck.title, deck.questions ? deck.questions.length : 0);
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load saved decks from localStorage", err);
+    }
+  }
 
   async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
@@ -1531,11 +1547,13 @@
         toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
       }
 
+      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     } catch (err) {
       console.error(err);
       toast("Imported locally, but IPFS publishing failed");
+      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     }
@@ -1626,6 +1644,7 @@
   }
 
   // INITIALIZATION
+  loadSavedDecks();
   loadDefaultDeckFromIPFS();
   applyFeatureFlags();
   syncDevControlSelects();
