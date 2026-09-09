@@ -1340,18 +1340,26 @@
   async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
     try {
-      const res = await fetch(`${IPFS_GATEWAY}${DEFAULT_DECK_CID}`);
-      if (!res.ok) throw new Error("HTTP error " + res.status);
-      const data = await res.json();
+      // 1. Fetch active CID from backend API endpoint
+      const res = await fetch('/api/get-deck');
+      if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+      const { cid } = await res.json();
+
+      // 2. Load the deck content from Pinata IPFS Gateway
+      const gatewayUrl = `${IPFS_GATEWAY}${cid}`;
+      const deckRes = await fetch(gatewayUrl);
+      if (!deckRes.ok) throw new Error(`Gateway error: ${deckRes.status}`);
+      const deckData = await deckRes.json();
       
-      const questions = Array.isArray(data) ? data : data.questions;
+      // 3. Extract questions array and assign to default deck
+      const questions = Array.isArray(deckData) ? deckData : (deckData.questions || []);
       if (questions && Array.isArray(questions) && questions.length > 0) {
         defaultDeck = questions;
         if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official IPFS Set`;
         return;
       }
     } catch (err) {
-      console.warn("Failed to load default deck from IPFS, using fallback dataset.", err);
+      console.warn("Failed to load default deck from backend/IPFS, using fallback dataset.", err);
     }
     if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
   }
@@ -1644,8 +1652,8 @@
   }
 
   // INITIALIZATION
+  document.addEventListener('DOMContentLoaded', loadDefaultDeckFromIPFS);
   loadSavedDecks();
-  loadDefaultDeckFromIPFS();
   applyFeatureFlags();
   syncDevControlSelects();
   updateNetworkBadge();
