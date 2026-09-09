@@ -936,11 +936,7 @@
           </label>
           <label class="import-check">
             <input type="checkbox" id="chkPublic">
-            <span>Make public — publish to IPFS via Pinata</span>
-          </label>
-          <label class="import-check">
-            <input type="checkbox" id="chkValidate" checked>
-            <span>Validate questions before importing</span>
+            <span>Make public — publish to Public Data</span>
           </label>
           <label class="import-check">
             <input type="checkbox" id="chkPreserveMetadata" checked>
@@ -990,12 +986,12 @@
 <div id="toast"></div>
 
 <script>
-  // VERCEL API ENDPOINT FOR PINATA IPFS UPLOAD
+  // VERCEL API ENDPOINT FOR PUBLIC DATA UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
 
   async function pinataIpfsUpload(fileData) {
     try {
-      toast("Uploading to Pinata IPFS via Vercel...");
+      toast("Uploading to Public Data...");
       const response = await fetch(VERCEL_API_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1007,16 +1003,16 @@
       }
 
       const result = await response.json();
-      toast("Successfully uploaded to IPFS!");
+      toast("Successfully uploaded to Public Data!");
       return result;
     } catch (err) {
-      toast("Pinata IPFS upload failed");
-      console.error("Error uploading to Vercel Pinata endpoint:", err);
+      toast("Public Data upload failed");
+      console.error("Error uploading:", err);
       throw err;
     }
   }
 
-  // DEFAULT IPFS CONFIGURATION
+  // DEFAULT PUBLIC DATA CONFIGURATION
   const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
   const IPFS_GATEWAY = "https://harlequin-bitter-booby-228.mypinata.cloud/ipfs/";
   const MAX_QUESTIONS = 350;
@@ -1085,7 +1081,7 @@
     }
   }
 
-  // USER MODE TRIPLE-CLICK HANDLER FOR IPFS / REMOTE JSON
+  // USER MODE TRIPLE-CLICK HANDLER FOR PUBLIC DATA / REMOTE JSON
   let userPillClicks = 0;
   let userPillTimer = null;
 
@@ -1101,7 +1097,7 @@
   }
 
   async function promptIpfsSource() {
-    const input = prompt("Enter an IPFS CID or full JSON URL (leave blank to clear custom decks):");
+    const input = prompt("Enter a Public Data ID or full JSON URL (leave blank to clear custom decks):");
     if (input === null) return;
 
     let targetUrl = input.trim();
@@ -1115,13 +1111,13 @@
     }
 
     try {
-      toast("Fetching IPFS deck...");
+      toast("Fetching Public Data deck...");
       const res = await fetch(targetUrl);
       if (!res.ok) throw new Error("HTTP error " + res.status);
       const data = await res.json();
 
       const questions = Array.isArray(data) ? data : data.questions;
-      const title = data.title || "IPFS Imported Deck";
+      const title = data.title || "Public Data Imported Deck";
 
       if (!questions || !Array.isArray(questions) || questions.length === 0) {
         toast("Invalid deck schema");
@@ -1137,9 +1133,9 @@
       customDecks[deckKey] = { title, questions };
 
       renderDeckCard(deckKey, title, questions.length);
-      toast(`Loaded IPFS set: ${title}`);
+      toast(`Loaded Public Data set: ${title}`);
     } catch (err) {
-      toast("Failed to fetch IPFS payload");
+      toast("Failed to fetch Public Data payload");
       console.error(err);
     }
   }
@@ -1270,7 +1266,7 @@
       // Extract default CID (fallback to client constant if missing)
       const primaryCid = data.defaultCid || data.cid || DEFAULT_DECK_CID;
   
-      // 2. Load primary default deck content from Pinata IPFS
+      // 2. Load primary default deck content from Pinata Public Data
       const deckRes = await fetch(`${IPFS_GATEWAY}${primaryCid}`);
       if (!deckRes.ok) throw new Error(`Gateway error: ${deckRes.status}`);
       const deckData = await deckRes.json();
@@ -1278,7 +1274,7 @@
       const questions = Array.isArray(deckData) ? deckData : (deckData.questions || []);
       if (questions.length > 0) {
         defaultDeck = questions;
-        if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official IPFS Set`;
+        if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official Public Data Set`;
       }
   
       // 3. Render individual public sets fetched from Redis
@@ -1292,7 +1288,7 @@
               questions: [] // Will fetch on-demand or pre-fetch below
             };
   
-            // Fetch individual question set contents from IPFS
+            // Fetch individual question set contents from Public Data
             fetch(`${IPFS_GATEWAY}${deck.cid}`)
               .then(r => r.json())
               .then(pData => {
@@ -1306,7 +1302,7 @@
       }
   
     } catch (err) {
-      console.warn("Failed to load active decks from backend/IPFS, using fallback dataset.", err);
+      console.warn("Failed to load active decks from backend/Public Data, using fallback dataset.", err);
       if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
     }
   } 
@@ -1454,7 +1450,7 @@
 
     const saveOffline = document.getElementById('chkOffline').checked;
     const savePublic = document.getElementById('chkPublic').checked;
-    const validate = document.getElementById('chkValidate').checked;
+    const validate = true; // Defaulted to true internally without showing UI option
 
     const title =
       document.getElementById('importDeckName').value.trim() ||
@@ -1495,18 +1491,18 @@
 
   async function publishImportedDeck(data, title, deckKey) {
     try {
-      toast("Publishing set to IPFS...");
+      toast("Publishing set to Public Data...");
       const ipfsResult = await pinataIpfsUpload(data);
 
       if (ipfsResult && ipfsResult.IpfsHash) {
-        toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
+        toast(`Published to Public Data! ID: ${ipfsResult.IpfsHash}`);
       }
 
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     } catch (err) {
       console.error(err);
-      toast("Imported locally, but IPFS publishing failed");
+      toast("Imported locally, but Public Data publishing failed");
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     }
