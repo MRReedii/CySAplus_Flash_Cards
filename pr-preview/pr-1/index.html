@@ -992,29 +992,32 @@
 <script>
   // VERCEL API ENDPOINT FOR PINATA IPFS UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
+  const HOST = "https://mrreedii.github.io"
 
   async function pinataIpfsUpload(fileData) {
     try {
-      toast("Uploading to Pinata IPFS via Vercel...");
+      toast("Uploading Question Set...");
       const response = await fetch(VERCEL_API_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+  	"Content-Type": "application/json"
+        },
         body: JSON.stringify(fileData)
       });
-
+  
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
-
+  
       const result = await response.json();
-      toast("Successfully uploaded to IPFS!");
+      toast("Uploaded");
       return result;
     } catch (err) {
-      toast("Pinata IPFS upload failed");
-      console.error("Error uploading to Vercel Pinata endpoint:", err);
+      toast("Upload failed");
+      console.error("Error uploading to:", err);
       throw err;
     }
-  }
+  }   
 
   // DEFAULT IPFS CONFIGURATION
   const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
