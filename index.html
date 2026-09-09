@@ -992,32 +992,29 @@
 <script>
   // VERCEL API ENDPOINT FOR PINATA IPFS UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
-  const HOST = "https://mrreedii.github.io"
 
   async function pinataIpfsUpload(fileData) {
     try {
-      toast("Uploading Question Set...");
+      toast("Uploading to Pinata IPFS via Vercel...");
       const response = await fetch(VERCEL_API_ENDPOINT, {
         method: "POST",
-        headers: {
-  	"Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(fileData)
       });
-  
+
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
-  
+
       const result = await response.json();
-      toast("Uploaded");
+      toast("Successfully uploaded to IPFS!");
       return result;
     } catch (err) {
-      toast("Upload failed");
-      console.error("Error uploading to:", err);
+      toast("Pinata IPFS upload failed");
+      console.error("Error uploading to Vercel Pinata endpoint:", err);
       throw err;
     }
-  }   
+  }
 
   // DEFAULT IPFS CONFIGURATION
   const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
@@ -1104,9 +1101,7 @@
   }
 
   async function promptIpfsSource() {
-    const input = prompt(
-      "Enter an IPFS CID or any JSON URL\n(leave blank to clear custom decks):"
-    );
+    const input = prompt("Enter an IPFS CID or full JSON URL (leave blank to clear custom decks):");
     if (input === null) return;
 
     let targetUrl = input.trim();
@@ -1115,95 +1110,37 @@
       return;
     }
 
-    // Pure CID → automatically use your preferred gateway
-    const cidPattern = /^(Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z2-7]{50,}|bafk[a-z2-7]{50,})$/i;
-    if (cidPattern.test(targetUrl)) {
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
       targetUrl = `${IPFS_GATEWAY}${targetUrl}`;
     }
 
-    // Basic URL safety
-    if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
-      toast("Must be a CID or a full http/https URL");
-      return;
-    }
-
-    // Strongly prefer HTTPS (still allow HTTP if the user really wants it)
-    if (targetUrl.startsWith("http://")) {
-      const proceed = confirm(
-        "This is an insecure HTTP link.\n\nAre you sure you want to load it?"
-      );
-      if (!proceed) return;
-    }
-
     try {
-      toast("Fetching remote deck...");
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 s timeout
-
-      const res = await fetch(targetUrl, {
-        signal: controller.signal,
-        redirect: "follow"
-      });
-      clearTimeout(timeoutId);
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      // Size guard (important for "any JSON")
-      const contentLength = res.headers.get("content-length");
-      if (contentLength && parseInt(contentLength, 10) > 5_000_000) { // 5 MB
-        toast("File is too large (max 5 MB)");
-        return;
-      }
-
+      toast("Fetching IPFS deck...");
+      const res = await fetch(targetUrl);
+      if (!res.ok) throw new Error("HTTP error " + res.status);
       const data = await res.json();
 
-      // Flexible schema support
-      const questions = Array.isArray(data)
-        ? data
-        : (data.questions || data.cards || data.items || []);
+      const questions = Array.isArray(data) ? data : data.questions;
+      const title = data.title || "IPFS Imported Deck";
 
-      const title = (
-        data.title ||
-        data.name ||
-        data.deckName ||
-        "Remote Deck"
-      ).toString().slice(0, 120);
-
-      if (!Array.isArray(questions) || questions.length === 0) {
-        toast("No questions found in this JSON");
+      if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        toast("Invalid deck schema");
         return;
       }
 
       if (questions.length > MAX_QUESTIONS) {
-        toast(`Too many questions (limit is ${MAX_QUESTIONS})`);
+        toast(`Question set exceeds the ${MAX_QUESTIONS}-question limit`);
         return;
       }
 
-      // Light validation – still allows many formats
-      const validCount = questions.filter(q => {
-        if (typeof q === "string") return q.trim().length > 0;
-        return q && (q.q || q.question || q.prompt || q.front || q.text);
-      }).length;
-
-      if (validCount === 0) {
-        toast("Could not recognize any valid questions");
-        return;
-      }
-
-      const deckKey = "remote_" + Date.now();
+      const deckKey = 'ipfs_' + Date.now();
       customDecks[deckKey] = { title, questions };
-      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
 
       renderDeckCard(deckKey, title, questions.length);
-      toast(`Loaded "${title}" (${questions.length} questions)`);
+      toast(`Loaded IPFS set: ${title}`);
     } catch (err) {
+      toast("Failed to fetch IPFS payload");
       console.error(err);
-      if (err.name === "AbortError") {
-        toast("Request timed out");
-      } else {
-        toast("Failed to load remote deck");
-      }
     }
   }
 
@@ -1322,47 +1259,57 @@
   let currentDeck = defaultDeck;
   let i = 0, s = false;
 
-  function loadSavedDecks() {
-    try {
-      const saved = localStorage.getItem('saved_custom_decks');
-      if (saved) {
-        customDecks = JSON.parse(saved);
-        Object.keys(customDecks).forEach(deckKey => {
-          const deck = customDecks[deckKey];
-          renderDeckCard(deckKey, deck.title, deck.questions ? deck.questions.length : 0);
-        });
-      }
-    } catch (err) {
-      console.error("Failed to load saved decks from localStorage", err);
-    }
-  }
-
-  async function loadDefaultDeckFromIPFS() {
+   async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
     try {
-      // 1. Fetch active CID from backend API endpoint
-      const res = await fetch('https://cy-sa-plus-flash-cards-api.vercel.app/api/get-deck');
+      // 1. Fetch active CIDs and deck list from backend
+      const res = await fetch('/api/get-deck');
       if (!res.ok) throw new Error(`Backend error: ${res.status}`);
-      const { cid } = await res.json();
-
-      // 2. Load the deck content from Pinata IPFS Gateway
-      const gatewayUrl = `${IPFS_GATEWAY}${cid}`;
-      const deckRes = await fetch(gatewayUrl);
+      const data = await res.json();
+  
+      // Extract default CID (fallback to client constant if missing)
+      const primaryCid = data.defaultCid || data.cid || DEFAULT_DECK_CID;
+  
+      // 2. Load primary default deck content from Pinata IPFS
+      const deckRes = await fetch(`${IPFS_GATEWAY}${primaryCid}`);
       if (!deckRes.ok) throw new Error(`Gateway error: ${deckRes.status}`);
       const deckData = await deckRes.json();
-      
-      // 3. Extract questions array and assign to default deck
+  
       const questions = Array.isArray(deckData) ? deckData : (deckData.questions || []);
-      if (questions && Array.isArray(questions) && questions.length > 0) {
+      if (questions.length > 0) {
         defaultDeck = questions;
         if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official IPFS Set`;
-        return;
       }
+  
+      // 3. Render individual public sets fetched from Redis
+      if (Array.isArray(data.decks) && data.decks.length > 0) {
+        data.decks.forEach((deck, idx) => {
+          if (deck && deck.cid) {
+            const deckKey = `public_${deck.cid}`;
+            // Store in customDecks cache so startDeck(deckKey) can launch it
+            customDecks[deckKey] = {
+              title: deck.title || `Public Deck ${idx + 1}`,
+              questions: [] // Will fetch on-demand or pre-fetch below
+            };
+  
+            // Fetch individual question set contents from IPFS
+            fetch(`${IPFS_GATEWAY}${deck.cid}`)
+              .then(r => r.json())
+              .then(pData => {
+                const qList = Array.isArray(pData) ? pData : (pData.questions || []);
+                customDecks[deckKey].questions = qList;
+                renderDeckCard(deckKey, deck.title || "Public Question Set", qList.length);
+              })
+              .catch(err => console.warn(`Failed to load public deck ${deck.cid}`, err));
+          }
+        });
+      }
+  
     } catch (err) {
-      console.warn("Failed to load default deck from backend/IPFS, using fallback dataset.", err);
+      console.warn("Failed to load active decks from backend/IPFS, using fallback dataset.", err);
+      if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
     }
-    if (metaEl) metaEl.textContent = `${fallbackDeck.length} Questions · Fallback Set`;
-  }
+  } 
 
   function renderDeckCard(deckKey, title, count) {
     const container = document.getElementById('decksContainer');
@@ -1555,13 +1502,11 @@
         toast(`Published to IPFS! CID: ${ipfsResult.IpfsHash}`);
       }
 
-      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     } catch (err) {
       console.error(err);
       toast("Imported locally, but IPFS publishing failed");
-      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
       renderDeckCard(deckKey, title, data.questions?.length || 0);
       showHub();
     }
@@ -1652,8 +1597,7 @@
   }
 
   // INITIALIZATION
-  document.addEventListener('DOMContentLoaded', loadDefaultDeckFromIPFS);
-  loadSavedDecks();
+  loadDefaultDeckFromIPFS();
   applyFeatureFlags();
   syncDevControlSelects();
   updateNetworkBadge();
