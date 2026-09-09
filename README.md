@@ -4,7 +4,7 @@ A lightweight, browser-based flashcard deck for CompTIA CySA+ study — built by
 
 ---
 
-## How This Started
+### How This Started
 
 We're in the middle of a three-month cybersecurity program with about 30 people, working toward CySA+ and Splunk certifications while balancing real work.
 
@@ -14,7 +14,7 @@ One of the students in our Standup group shared a solid PDF set. I turned those 
 
 Now the two of us are collaborating to turn this into a small hub where members of the cohort can share and study from each other's question sets.
 
-## What This Is Right Now
+### What This Is Right Now
 
 * Clean, interactive flashcard interface
 * Flip cards
@@ -31,15 +31,13 @@ Now the two of us are collaborating to turn this into a small hub where members 
   * And more
 * Hosted on GitHub Pages for easy access
 
-## 📚 Open the Flashcards
+### 📚 Open the Flashcards
 
 Visit the live application:
-
 **[CySA+ Study Hub](https://mrreedii.github.io/CySAplus_Flash_Cards/)**
 
----
 
-## Where We're Headed
+### Where We're Headed
 
 * Pull in more question sets from other students in the class
 * Create a shared space for cohort study materials
@@ -50,9 +48,8 @@ This is an independent side project between the two students who started it.
 
 **No official affiliation — just students helping each other get through the material.**
 
----
 
-## 🌐 Custom Data Sources
+### 🌐 Custom Data Sources
 
 ### Hidden Feature
 
@@ -69,9 +66,8 @@ You can load external, decentralized, or remote question sets directly into the 
 4. The application will fetch the payload and dynamically load the question set into the available decks.
 5. Submitting an empty input clears custom-loaded sets and resets the application to the default question banks.
 
----
 
-## 🛠 Feature Flags & Developer Controls
+### 🛠 Feature Flags & Developer Controls
 
 Unfinished and experimental features are isolated behind feature flags to keep the production view clean while allowing active development.
 
@@ -112,15 +108,12 @@ Add a corresponding `<select>` control inside the `#devHeader` element so the fe
 #### 3. Bind Feature Visibility
 
 Apply the `feature-in-dev` CSS class along with your specific feature tag (for example, `feature-new`) to any HTML element that should be conditionally hidden or revealed.
-
 The feature visibility is then handled through `applyFeatureFlags()`.
 
 ---
 
-## 🤝 Why We Built This
+**Open the flashcards:** just visit the [GitHub Pages link](https://mrreedii.github.io/CySAplus_Flash_Cards/) for this repo.
 
-Study hard. Share what works. Lift each other up.
-
-We're all trying to pass the same exams.
-
+Study hard. Share what works. Lift each other up.  
+We're all trying to pass the same exams.  
 Let's make the path a little clearer for the people next to us.
