@@ -1276,8 +1276,22 @@
   let currentDeck = defaultDeck;
   let i = 0, s = false;
 
-  // SPEECH SYNTHESIS
+  // SPEECH SYNTHESIS ENGINE & VOICE MANAGEMENT
   let isSpeaking = false;
+  let systemVoices = [];
+
+  function loadVoices() {
+    if ('speechSynthesis' in window) {
+      systemVoices = window.speechSynthesis.getVoices();
+    }
+  }
+
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
 
   function stopSpeech() {
     if ('speechSynthesis' in window) {
@@ -1303,21 +1317,34 @@
     }
 
     const currentItem = currentDeck[i];
-    const textToRead = s ? currentItem.a : currentItem.q;
-    if (!textToRead) return;
+    const rawTextToRead = s ? currentItem.a : currentItem.q;
+    if (!rawTextToRead) return;
+
+    // Clean HTML formatting tags before sending text to speech engine
+    const textToRead = rawTextToRead.replace(/<[^>]*>/g, '');
 
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utterance.rate = 1.0;
 
+    // Dynamically retrieve and attach available voices
+    const voices = systemVoices.length ? systemVoices : window.speechSynthesis.getVoices();
+    const selectedVoice = voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
     utterance.onend = function() {
       stopSpeech();
     };
 
-    utterance.onerror = function() {
+    utterance.onerror = function(event) {
       stopSpeech();
-      toast('Error reading text aloud');
+      if (event.error !== 'canceled') {
+        toast('Speech error: Ensure system TTS voices are installed');
+      }
     };
 
     isSpeaking = true;
