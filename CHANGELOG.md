@@ -1,6 +1,22 @@
-Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file. This project adheres to Semantic Versioning.
+
+[v0.2.0] - 2026-09-18
+Added
+- Question parser helper utilities and CyberQuizz mode functionality
+- Text-to-speech audio playback for flashcards with dedicated error handling
+- Support for external data sources, dataset URL fetching, local set merging, and question set splitting
+- Input validation on custom data sources
+- Cross-site scripting (XSS) protections across user inputs and uploads
+- Sign-In portal gated under a feature flag
+- LICENSE file with MIT License and Commons Clause
+
+Changed
+- Moved "Upload Question Sets" call-to-action into the footer UI and updated overall Upload component styling
+- Refactored question set fetching, URL resolution, and local storage handling routines
+- Revised README.md with clearer section headers and updated links to the live application
+- Updated .gitignore for static HTML/JS projects
 
 [v0.1.0] - 2026-08-25
 Added
@@ -19,10 +35,3 @@ Added
 - First commit establishing project structure
 - README with project overview
 - GitHub Pages hyperlink added to README
-
-This reads cleaner because it:
-
-- Groups related commits into meaningful categories (Added, Changed, Reverted)
-- Drops the merge commit since that's noise
-- Explains the revert with context instead of just listing it
-- Follows the Keep a Changelog standard format that most devs recognize
