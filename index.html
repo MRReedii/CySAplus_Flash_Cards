@@ -1059,21 +1059,26 @@
   function parseRawQuestion(qText, aText) {
     if (typeof qText !== 'string') return { prompt: '', options: [], correctIndex: 0, explanation: '' };
 
-    const lines = qText.split('\n').map(l => l.trim()).filter(Boolean);
-    const prompt = lines[0] || '';
+    // 1. Separate prompt stem from options (matches A., B., C., D. or A), B), etc.)
+    const optionRegex = /(?:\r?\n|\s)+(?=[A-D1-4][\.\)]\s+)/i;
+    const parts = qText.split(optionRegex);
+    
+    // First segment is the question prompt
+    const prompt = (parts[0] || '').trim();
     const options = [];
 
-    lines.slice(1).forEach(line => {
-      // Matches "A)", "A.", "1)", "1.", or "- " prefix formats
-      if (/^([A-D1-4][\.\)]|[-•])\s*/i.test(line)) {
-        options.push(line.replace(/^([A-D1-4][\.\)]|[-•])\s*/i, ''));
+    // Extract extracted option items
+    for (let i = 1; i < parts.length; i++) {
+      const cleanOption = parts[i].replace(/^[A-D1-4][\.\)]\s*/i, '').trim();
+      if (cleanOption) {
+        options.push(cleanOption);
       }
-    });
+    }
 
     const aString = typeof aText === 'string' ? aText : JSON.stringify(aText || '');
-    
-    // Parse choice indicator (A-D or 1-4)
-    const match = aString.match(/(?:Correct Answer|Answer|Correct):\s*([A-D1-4])/i);
+
+    // 2. Parse answer key (Supports "Correct Answer: B", "Answer: B", "Correct: B", etc.)
+    const match = aString.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D1-4])/i);
     let correctIndex = 0;
 
     if (match) {
@@ -1085,13 +1090,13 @@
       }
     }
 
-    // Extract rationale / explanation text
+    // 3. Extract explanation/rationale text
     const rationaleMatch = aString.match(/(?:Rationale|Explanation):\s*([\s\S]+)/i);
-    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aString;
+    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aString.replace(/^Correct\s*Answer:\s*[A-D1-4]\s*/i, '').trim();
 
     return {
       prompt: prompt,
-      options: options.length > 0 ? options : ["Option A", "Option B", "Option C", "Option D"],
+      options: options.length >= 2 ? options : ["Option A", "Option B", "Option C", "Option D"],
       correctIndex: correctIndex,
       explanation: explanation
     };
