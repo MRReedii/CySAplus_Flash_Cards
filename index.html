@@ -1681,17 +1681,62 @@
   let quizIncorrect = 0;
 
   function parseCard(card) {
-    const qStr = typeof card === 'string' ? card : (card.q || card.question || '');
-    const aStr = typeof card === 'string' ? '' : (card.a || card.answer || '');
+    // Quiz Mode uses structured options when the imported deck provides them.
+    // This keeps quiz mode compatible with the JSON data without requiring
+    // the question text to be reparsed into a different format.
+    if (card && typeof card === 'object') {
+      const qStr = card.q || card.question || card.prompt || card.stem || '';
+      const aStr = card.a || card.answer || card.explanation || card.rationale || '';
 
-    const answerMatch = aStr.match(/Correct (?:Answer|Agreement): ([A-D])/i);
+      if (Array.isArray(card.options) && card.options.length >= 2) {
+        const options = card.options.map((option, index) => {
+          if (typeof option === 'string') {
+            return { letter: String.fromCharCode(65 + index), text: option.trim() };
+          }
+
+          const letter = String(
+            option.letter || option.value || String.fromCharCode(65 + index)
+          ).toUpperCase();
+          const text = option.text ?? option.label ?? option.value ?? '';
+          return { letter, text: String(text).trim() };
+        }).filter(option => option.text);
+
+        let correctLetter = '';
+        if (typeof card.correctIndex === 'number' && options[card.correctIndex]) {
+          correctLetter = options[card.correctIndex].letter;
+        }
+
+        if (!correctLetter) {
+          const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
+          if (answerMatch) correctLetter = answerMatch[1].toUpperCase();
+        }
+
+        return {
+          stem: qStr.replace(/\n\s*[A-D]\s*[\.)]\s+.*$/s, '').trim() || qStr.trim(),
+          options,
+          correctLetter,
+          rationale: card.explanation || aStr
+        };
+      }
+    }
+
+    // Legacy/raw deck fallback: parse all A-D options from the full question.
+    const qStr = typeof card === 'string' ? card : (card?.q || card?.question || '');
+    const aStr = typeof card === 'string' ? '' : (card?.a || card?.answer || '');
+
+    const optionMatches = [...qStr.matchAll(/(?:^|\n)\s*([A-D])\s*[\.)]\s*(.+?)(?=\n\s*[A-D]\s*[\.)]\s*|$)/gis)];
+    const options = optionMatches.map(match => ({
+      letter: match[1].toUpperCase(),
+      text: match[2].trim()
+    }));
+
+    const stem = optionMatches.length
+      ? qStr.slice(0, optionMatches[0].index).trim()
+      : qStr.trim();
+
+    const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
     const correctLetter = answerMatch ? answerMatch[1].toUpperCase() : '';
-    const parts = qStr.split(/\n\n/);
-    const stem = parts[0];
-    const options = (parts[1] || '').split('\n').map(line => {
-      const match = line.match(/^([A-D])\)\s*(.*)$/i);
-      return match ? { letter: match[1].toUpperCase(), text: match[2] } : null;
-    }).filter(Boolean);
+
     return { stem, options, correctLetter, rationale: aStr };
   }
 
