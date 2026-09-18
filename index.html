@@ -1803,19 +1803,16 @@
   let quizIncorrect = 0;
 
   function parseCard(card) {
-    // Quiz Mode uses structured options when the imported deck provides them.
-    // This keeps quiz mode compatible with the JSON data without requiring
-    // the question text to be reparsed into a different format.
     if (card && typeof card === 'object') {
       const qStr = card.q || card.question || card.prompt || card.stem || '';
       const aStr = card.a || card.answer || card.explanation || card.rationale || '';
 
+      // If structured options already exist in JSON format
       if (Array.isArray(card.options) && card.options.length >= 2) {
         const options = card.options.map((option, index) => {
           if (typeof option === 'string') {
             return { letter: String.fromCharCode(65 + index), text: option.trim() };
           }
-
           const letter = String(
             option.letter || option.value || String.fromCharCode(65 + index)
           ).toUpperCase();
@@ -1829,37 +1826,43 @@
         }
 
         if (!correctLetter) {
-          const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
-          if (answerMatch) correctLetter = answerMatch[1].toUpperCase();
+          const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D1-4])/i);
+          if (answerMatch) {
+            const val = answerMatch[1].toUpperCase();
+            if (['A', 'B', 'C', 'D'].includes(val)) {
+              correctLetter = val;
+            } else if (!isNaN(val)) {
+              const idx = parseInt(val, 10) - 1;
+              if (options[idx]) correctLetter = options[idx].letter;
+            }
+          }
         }
 
         return {
-          stem: qStr.replace(/\n\s*[A-D]\s*[\.)]\s+.*$/s, '').trim() || qStr.trim(),
+          stem: qStr.replace(/\n\s*[A-D1-4]\s*[\.)]\s+.*$/s, '').trim() || qStr.trim(),
           options,
           correctLetter,
           rationale: card.explanation || aStr
         };
       }
+
+      // Fallback: Use parseRawQuestion for raw text question strings
+      const parsed = parseRawQuestion(qStr, aStr);
+      const letters = ['A', 'B', 'C', 'D'];
+      const options = parsed.options.map((opt, idx) => ({
+        letter: letters[idx] || String(idx + 1),
+        text: opt
+      }));
+
+      return {
+        stem: parsed.prompt,
+        options: options,
+        correctLetter: letters[parsed.correctIndex] || 'A',
+        rationale: parsed.explanation
+      };
     }
 
-    // Legacy/raw deck fallback: parse all A-D options from the full question.
-    const qStr = typeof card === 'string' ? card : (card?.q || card?.question || '');
-    const aStr = typeof card === 'string' ? '' : (card?.a || card?.answer || '');
-
-    const optionMatches = [...qStr.matchAll(/(?:^|\n)\s*([A-D])\s*[\.)]\s*(.+?)(?=\n\s*[A-D]\s*[\.)]\s*|$)/gis)];
-    const options = optionMatches.map(match => ({
-      letter: match[1].toUpperCase(),
-      text: match[2].trim()
-    }));
-
-    const stem = optionMatches.length
-      ? qStr.slice(0, optionMatches[0].index).trim()
-      : qStr.trim();
-
-    const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
-    const correctLetter = answerMatch ? answerMatch[1].toUpperCase() : '';
-
-    return { stem, options, correctLetter, rationale: aStr };
+    return { stem: '', options: [], correctLetter: '', rationale: '' };
   }
 
   function startQuiz(deckKey, titleName) {
