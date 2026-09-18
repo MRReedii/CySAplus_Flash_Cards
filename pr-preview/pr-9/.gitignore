@@ -1,0 +1,10 @@
+.DS_Store
+
+# Mac
+.DS_Store
+.AppleDouble
+
+# Editors
+.vscode/
+.idea/
+*.swp
