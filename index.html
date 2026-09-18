@@ -1055,6 +1055,37 @@
 <div id="toast"></div>
 
 <script>
+  // OPTION 1: JS PARSER FUNCTION
+  function parseRawQuestion(qText, aText) {
+    // Extract options (A., B., C., D.) from question string
+    const lines = qText.split('\n').map(l => l.trim()).filter(Boolean);
+    const prompt = lines[0];
+    const options = [];
+    
+    lines.slice(1).forEach(line => {
+      if (/^[A-D][\.\)]/i.test(line)) {
+        options.push(line.replace(/^[A-D][\.\)]\s*/i, ''));
+      }
+    });
+
+    // Parse correct letter choice from answer string
+    const match = aText.match(/Correct Answer:\s*([A-D])/i);
+    const correctLetter = match ? match[1].toUpperCase() : 'A';
+    const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+    const correctIndex = letterMap[correctLetter] ?? 0;
+
+    // Extract rationale text
+    const rationaleMatch = aText.match(/Rationale:\s*([\s\S]+)/i);
+    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aText;
+
+    return {
+      prompt: prompt,
+      options: options.length > 0 ? options : ["Option A", "Option B", "Option C", "Option D"],
+      correctIndex: correctIndex,
+      explanation: explanation
+    };
+  }
+
   // VERCEL API ENDPOINT FOR PUBLIC DATA UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
 
@@ -1798,6 +1829,7 @@
   // UPLOAD / REVIEW / IMPORT WORKFLOW
   let importedQuestionSet = null;
 
+  // OPTION 2: UPDATED handleFileUpload HANDLER
   function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1808,28 +1840,51 @@
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        const questions = Array.isArray(data) ? data : data.questions;
-        const title = data.title || file.name.replace(/\.json$/i, '');
+        const rawQuestions = Array.isArray(data) ? data : data.questions;
 
-        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        if (!rawQuestions || !Array.isArray(rawQuestions) || rawQuestions.length === 0) {
           toast("Invalid JSON question format");
           return;
         }
 
-        if (questions.length > MAX_QUESTIONS) {
+        if (rawQuestions.length > MAX_QUESTIONS) {
           toast(`Question set exceeds the ${MAX_QUESTIONS}-question limit`);
           return;
         }
 
-        importedQuestionSet = { raw: data, title, questions, filename: file.name };
+        // Normalize raw 'q' and 'a' objects into quiz-ready objects
+        const normalizedQuestions = rawQuestions.map(item => {
+          if (item.q && item.a) {
+            const parsed = parseRawQuestion(item.q, item.a);
+            return {
+              q: item.q,
+              a: item.a,
+              prompt: parsed.prompt,
+              options: parsed.options,
+              correctIndex: parsed.correctIndex,
+              explanation: parsed.explanation
+            };
+          }
+          return item;
+        });
+
+        const deckTitle = data.title || file.name.replace(/\.json$/i, '');
+        
+        // Store loaded deck into customDecks object
+        const deckKey = 'uploaded_' + Date.now();
+        customDecks[deckKey] = {
+          title: deckTitle,
+          questions: normalizedQuestions
+        };
+
+        importedQuestionSet = { raw: data, title: deckTitle, questions: normalizedQuestions, filename: file.name };
         prepareImportReview();
-        toast(`Loaded "${title}" — review before importing`);
+        toast(`Successfully loaded "${deckTitle}" (${normalizedQuestions.length} questions) — review before importing`);
       } catch (err) {
+        toast("Error parsing JSON file. Check format.");
         console.error(err);
-        toast('Error parsing JSON file');
       }
     };
-
     reader.readAsText(file);
   }
 
