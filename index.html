@@ -245,6 +245,22 @@
     .btn-github { background: #24292e; color: #fff; }
     .btn-outline { background: transparent; color: #fff; border: 1px solid #ffffff40; }
 
+    .btn-icon {
+      width: auto;
+      min-width: 48px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .speaking-btn {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+      animation: pulse-speak 1.5s infinite;
+    }
+    @keyframes pulse-speak {
+      0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); }
+    }
+
     .divider {
       text-align: center;
       color: rgba(255, 255, 255, 0.5);
@@ -602,7 +618,8 @@
     }
     .study-card h2 { font-size: 1.05rem; font-weight: 500; line-height: 1.5; white-space: pre-wrap; text-align: left; margin: 0 0 16px 0; }
     .study-card p { opacity: .7; font-size: 0.85rem; margin: 0; text-align: right; }
-    .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .controls { display: flex; gap: 10px; }
+    .controls .btn-primary { flex: 1; }
     .progress { height: 8px; background: #ffffff22; border-radius: 99px; overflow: hidden; }
     .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffd0, #00a2ff); transition: width .2s; }
 
@@ -643,8 +660,10 @@
     @media (max-width: 600px) {
       .continue-card { flex-direction: column; align-items: stretch; }
       .continue-progress { max-width: none; }
-      .controls { grid-template-columns: 1fr 1fr; }
       .quiz-actions { flex-direction: column; align-items: stretch; }
+      .controls { flex-wrap: wrap; }
+      .controls .btn-primary { flex: 1 1 40%; }
+      .controls .btn-icon { flex: 0 0 auto; }
     }
   </style>
 </head>
@@ -1023,6 +1042,7 @@
     </div>
 
     <div class="controls">
+      <button class="btn btn-secondary btn-icon" id="speakBtn" onclick="toggleSpeech()" title="Read aloud">🔊</button>
       <button class="btn btn-primary" onclick="prev()">⬅ Prev</button>
       <button class="btn btn-primary" onclick="flip()">🔄 Flip</button>
       <button class="btn btn-primary" onclick="next()">Next ➡</button>
@@ -1055,6 +1075,24 @@
 <div id="toast"></div>
 
 <script>
+  // UI HELPER FUNCTIONS
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
   // JS PARSER FUNCTION (Supports structured options, numbered lists, and string/array forms)
   function parseRawQuestion(qText, aText) {
     if (typeof qText !== 'string') return { prompt: '', options: [], correctIndex: 0, explanation: '' };
@@ -1101,6 +1139,7 @@
       explanation: explanation
     };
   }
+
   // VERCEL API ENDPOINT FOR PUBLIC DATA UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
 
@@ -1307,6 +1346,7 @@
 
   // VIEW NAVIGATION ENGINE
   function showView(viewId) {
+    stopSpeech();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
   }
@@ -1569,6 +1609,87 @@
   let currentDeck = defaultDeck;
   let i = 0, s = false;
 
+  // SPEECH SYNTHESIS ENGINE & VOICE MANAGEMENT
+  let isSpeaking = false;
+  let systemVoices = [];
+
+  function loadVoices() {
+    if ('speechSynthesis' in window) {
+      systemVoices = window.speechSynthesis.getVoices();
+    }
+  }
+
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    isSpeaking = false;
+    const btn = document.getElementById('speakBtn');
+    if (btn) {
+      btn.innerHTML = '🔊';
+      btn.classList.remove('speaking-btn');
+    }
+  }
+
+  function toggleSpeech() {
+    if (!('speechSynthesis' in window)) {
+      toast('Speech synthesis is not supported in your browser');
+      return;
+    }
+
+    if (isSpeaking || window.speechSynthesis.speaking) {
+      stopSpeech();
+      return;
+    }
+
+    const currentItem = currentDeck[i];
+    const rawTextToRead = s ? currentItem.a : currentItem.q;
+    if (!rawTextToRead) return;
+
+    // Clean HTML formatting tags before sending text to speech engine
+    const textToRead = rawTextToRead.replace(/<[^>]*>/g, '');
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 1.0;
+
+    // Dynamically retrieve and attach available voices
+    const voices = systemVoices.length ? systemVoices : window.speechSynthesis.getVoices();
+    const selectedVoice = voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    utterance.onend = function() {
+      stopSpeech();
+    };
+
+    utterance.onerror = function(event) {
+      stopSpeech();
+      if (event.error !== 'canceled') {
+        toast('Speech error: Ensure system TTS voices are installed');
+      }
+    };
+
+    isSpeaking = true;
+    const btn = document.getElementById('speakBtn');
+    if (btn) {
+      btn.innerHTML = '⏹';
+      btn.classList.add('speaking-btn');
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
   async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
     try {
@@ -1655,6 +1776,7 @@
   }
 
   function render() {
+    stopSpeech();
     if (!currentDeck || currentDeck.length === 0) return;
     
     const rawContent = s ? currentDeck[i].a : currentDeck[i].q;
@@ -1899,258 +2021,90 @@
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        const rawQuestions = Array.isArray(data) ? data : (data.questions || data.cards || data.items);
+        const rawQuestions = Array.isArray(data) ? data : (data.questions || data.cards || []);
 
         if (!rawQuestions || !Array.isArray(rawQuestions) || rawQuestions.length === 0) {
-          toast("Invalid JSON question format");
+          toast("No valid questions found in JSON file");
           return;
         }
 
         if (rawQuestions.length > MAX_QUESTIONS) {
-          toast(`Question set exceeds the ${MAX_QUESTIONS}-question limit`);
+          toast(`Exceeds maximum limit of ${MAX_QUESTIONS} questions`);
           return;
         }
 
-        // Standardize item objects regardless of input key conventions
-        const normalizedQuestions = rawQuestions.map(item => {
-          if (typeof item === 'string') {
-            return { q: item, a: '', prompt: item, options: [], correctIndex: 0, explanation: '' };
-          }
-
-          const qStr = item.q || item.question || item.prompt || item.stem || '';
-          const aStr = item.a || item.answer || item.explanation || item.rationale || '';
-
-          const parsed = parseRawQuestion(qStr, aStr);
-
-          return {
-            q: qStr,
-            a: aStr,
-            prompt: parsed.prompt,
-            options: item.options && Array.isArray(item.options) ? item.options : parsed.options,
-            correctIndex: typeof item.correctIndex === 'number' ? item.correctIndex : parsed.correctIndex,
-            explanation: item.explanation || parsed.explanation
-          };
-        });
-
-        const deckTitle = data.title || data.name || file.name.replace(/\.json$/i, '');
-        
-        const deckKey = 'uploaded_' + Date.now();
-        customDecks[deckKey] = {
-          title: deckTitle,
-          questions: normalizedQuestions
+        importedQuestionSet = {
+          title: data.title || file.name.replace(/\.json$/i, ''),
+          questions: rawQuestions
         };
 
-        importedQuestionSet = { raw: data, title: deckTitle, questions: normalizedQuestions, filename: file.name };
-        prepareImportReview();
-        toast(`Successfully loaded "${deckTitle}" (${normalizedQuestions.length} questions)`);
+        // Populate Import Review Form
+        document.getElementById('importDeckName').value = importedQuestionSet.title;
+        document.getElementById('importQuestionCount').textContent = rawQuestions.length;
+        document.getElementById('importCategoryCount').textContent = data.category || 'Auto';
+        
+        // Render Preview Items
+        const previewEl = document.getElementById('importPreview');
+        previewEl.innerHTML = '';
+        const previewQuestions = rawQuestions.slice(0, 3);
+
+        previewQuestions.forEach((item, idx) => {
+          const qText = item.q || item.question || item.prompt || 'Question text unavailable';
+          const pItem = document.createElement('div');
+          pItem.className = 'preview-item';
+          pItem.innerHTML = `<strong>Item ${idx + 1}</strong>${escapeHtml(qText)}`;
+          previewEl.appendChild(pItem);
+        });
+
+        document.getElementById('previewCount').textContent = `${previewQuestions.length} of ${rawQuestions.length} shown`;
+        document.getElementById('importReview').classList.remove('hidden');
+        toast("File parsed successfully!");
+
       } catch (err) {
-        toast("Error parsing JSON file. Check format.");
+        toast("Invalid JSON format");
         console.error(err);
       }
     };
     reader.readAsText(file);
   }
 
-  function prepareImportReview() {
-    if (!importedQuestionSet) return;
-
-    const { title, questions } = importedQuestionSet;
-    document.getElementById('importReview').classList.remove('hidden');
-    document.getElementById('importDeckName').value = title;
-    document.getElementById('importQuestionCount').textContent = questions.length;
-
-    const categories = new Set(
-      questions.map(q => typeof q === 'object' ? (q.category || q.topic || q.domain) : null).filter(Boolean)
-    );
-    document.getElementById('importCategoryCount').textContent = categories.size || '—';
-    document.getElementById('importFormatStatus').textContent = '✓ Valid';
-    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
-
-    const preview = document.getElementById('importPreview');
-    const previewQuestions = questions;
-
-    preview.innerHTML = previewQuestions.map((q, index) => {
-      const question = typeof q === 'string'
-        ? q
-        : (q.q || q.question || q.prompt || JSON.stringify(q));
-
-      return `
-        <div class="preview-item">
-          <strong>Question ${index + 1}</strong>
-          ${escapeHtml(String(question)).slice(0, 500)}
-        </div>
-      `;
-    }).join('');
-
-    document.getElementById('previewCount').textContent =
-      `${previewQuestions.length} of ${questions.length} shown`;
-
-    document.getElementById('importStatus').textContent =
-      'Review the options above before importing. More refinement controls can be added here without changing the Hub.';
-
-    document.getElementById('importReview').scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  }
-
-  function confirmImport() {
-    if (!importedQuestionSet) {
-      toast('Select a JSON question set first');
+  async function confirmImport() {
+    if (!importedQuestionSet || !importedQuestionSet.questions.length) {
+      toast("No data available to import");
       return;
     }
 
-    const saveOffline = document.getElementById('chkOffline').checked;
-    const savePublic = document.getElementById('chkPublic').checked;
-    const validate = true;
+    const deckName = document.getElementById('importDeckName').value.trim() || importedQuestionSet.title;
+    const isPublic = document.getElementById('chkPublic').checked;
+    const deckKey = 'custom_' + Date.now();
 
-    const title =
-      document.getElementById('importDeckName').value.trim() ||
-      importedQuestionSet.title;
+    const formattedDeck = {
+      title: deckName,
+      questions: importedQuestionSet.questions
+    };
 
-    const questions = importedQuestionSet.questions;
+    customDecks[deckKey] = formattedDeck;
+    renderDeckCard(deckKey, deckName, formattedDeck.questions.length);
 
-    if (validate) {
-      const invalid = questions.filter(q => {
-        if (typeof q === 'string') return !q.trim();
-        return !(q.q || q.question || q.prompt);
-      });
-
-      if (invalid.length) {
-        document.getElementById('importStatus').textContent =
-          `Validation found ${invalid.length} question(s) without a recognizable question field.`;
-        document.getElementById('importStatusLabel').textContent = 'VALIDATION WARNING';
-        toast('Validation found incomplete questions');
-        return;
+    if (isPublic) {
+      try {
+        await pinataIpfsUpload(formattedDeck);
+      } catch (err) {
+        console.warn("Public upload failed, saved locally instead.");
       }
-    }
-
-    const deckKey = 'deck_' + Date.now();
-    customDecks[deckKey] = { title, questions };
-
-    if (saveOffline) {
-      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
-    }
-
-    if (savePublic) {
-      publishImportedDeck(importedQuestionSet.raw, title, deckKey);
     } else {
-      renderDeckCard(deckKey, title, questions.length);
-      toast(`Imported "${title}"`);
-      showHub();
+      toast(`Imported set: ${deckName}`);
     }
-  }
 
-  async function publishImportedDeck(data, title, deckKey) {
-    try {
-      toast("Publishing set to Public Data...");
-      const ipfsResult = await pinataIpfsUpload(data);
-
-      if (ipfsResult && ipfsResult.IpfsHash) {
-        toast(`Published to Public Data! ID: ${ipfsResult.IpfsHash}`);
-      }
-
-      renderDeckCard(deckKey, title, data.questions?.length || 0);
-      showHub();
-    } catch (err) {
-      console.error(err);
-      toast("Imported locally, but Public Data publishing failed");
-      renderDeckCard(deckKey, title, data.questions?.length || 0);
-      showHub();
-    }
-  }
-
-  function escapeHtml(value) {
-    if (typeof value !== 'string') return '';
-    return value.replace(/[&<>"'`\\]/g, char => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-      '`': '&#x60;',
-      '\\': '&#x5C;'
-    }[char]));
-  }
-
-  // UTILITY HELPERS
-  let toastTimer;
-  function toast(msg) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
-  }
-
-  function updateNetworkBadge() {
-    const badge = document.getElementById('status-badge');
-    if (navigator.onLine) {
-      badge.textContent = '● Online';
-      badge.className = 'badge-mini badge-online';
-    } else {
-      badge.textContent = '● Offline';
-      badge.className = 'badge-mini badge-offline';
-    }
-  }
-
-  window.addEventListener('online', updateNetworkBadge);
-  window.addEventListener('offline', updateNetworkBadge);
-
-  // KEYBOARD CONTROLS
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
-      if (document.getElementById('uploadView').classList.contains('active') || quizMode) {
-        showHub();
-        return;
-      }
-    }
-    if (!document.getElementById('studyView').classList.contains('active')) return;
-    if (e.code === "Space") { e.preventDefault(); flip(); }
-    if (e.key === "ArrowRight") next();
-    if (e.key === "ArrowLeft") prev();
-  });
-
-  // DRAG & DROP FOR QUESTION SET IMPORT
-  const uploadDropZone = document.getElementById('uploadDropZone');
-
-  if (uploadDropZone) {
-    ['dragenter', 'dragover'].forEach(name => {
-      uploadDropZone.addEventListener(name, event => {
-        event.preventDefault();
-        uploadDropZone.classList.add('drag-over');
-      });
-    });
-
-    ['dragleave', 'drop'].forEach(name => {
-      uploadDropZone.addEventListener(name, event => {
-        event.preventDefault();
-        uploadDropZone.classList.remove('drag-over');
-      });
-    });
-
-    uploadDropZone.addEventListener('drop', event => {
-      const file = event.dataTransfer.files[0];
-      if (!file) return;
-
-      if (!file.name.toLowerCase().endsWith('.json')) {
-        toast('Please drop a JSON file');
-        return;
-      }
-
-      const input = document.getElementById('jsonFileInput');
-      const transfer = new DataTransfer();
-      transfer.items.add(file);
-      input.files = transfer.files;
-      handleFileUpload({ target: input });
-    });
+    showHub();
   }
 
   // INITIALIZATION
-  loadDefaultDeckFromIPFS();
-  applyFeatureFlags();
-  syncDevControlSelects();
-  updateNetworkBadge();
+  window.addEventListener('DOMContentLoaded', () => {
+    applyFeatureFlags();
+    syncDevControlSelects();
+    loadDefaultDeckFromIPFS();
+  });
 </script>
 </body>
 </html>
