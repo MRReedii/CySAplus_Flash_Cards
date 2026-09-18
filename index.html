@@ -210,6 +210,22 @@
     .btn-github { background: #24292e; color: #fff; }
     .btn-outline { background: transparent; color: #fff; border: 1px solid #ffffff40; }
 
+    .btn-icon {
+      width: auto;
+      min-width: 48px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .speaking-btn {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+      animation: pulse-speak 1.5s infinite;
+    }
+    @keyframes pulse-speak {
+      0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.6); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); }
+    }
+
     .divider {
       text-align: center;
       color: rgba(255, 255, 255, 0.5);
@@ -577,7 +593,8 @@
     }
     .study-card h2 { font-size: 1.05rem; font-weight: 500; line-height: 1.5; white-space: pre-wrap; text-align: left; margin: 0 0 16px 0; }
     .study-card p { opacity: .7; font-size: 0.85rem; margin: 0; text-align: right; }
-    .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .controls { display: flex; gap: 10px; }
+    .controls .btn-primary { flex: 1; }
     .progress { height: 8px; background: #ffffff22; border-radius: 99px; overflow: hidden; }
     .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffd0, #00a2ff); transition: width .2s; }
 
@@ -604,7 +621,9 @@
     @media (max-width: 600px) {
       .continue-card { flex-direction: column; align-items: stretch; }
       .continue-progress { max-width: none; }
-      .controls { grid-template-columns: 1fr 1fr; }
+      .controls { flex-wrap: wrap; }
+      .controls .btn-primary { flex: 1 1 40%; }
+      .controls .btn-icon { flex: 0 0 auto; }
     }
   </style>
 </head>
@@ -974,6 +993,7 @@
     </div>
 
     <div class="controls">
+      <button class="btn btn-secondary btn-icon" id="speakBtn" onclick="toggleSpeech()" title="Read aloud">🔊</button>
       <button class="btn btn-primary" onclick="prev()">⬅ Prev</button>
       <button class="btn btn-primary" onclick="flip()">🔄 Flip</button>
       <button class="btn btn-primary" onclick="next()">Next ➡</button>
@@ -1193,6 +1213,7 @@
 
   // VIEW NAVIGATION ENGINE
   function showView(viewId) {
+    stopSpeech();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
   }
@@ -1254,6 +1275,87 @@
   let customDecks = {};
   let currentDeck = defaultDeck;
   let i = 0, s = false;
+
+  // SPEECH SYNTHESIS ENGINE & VOICE MANAGEMENT
+  let isSpeaking = false;
+  let systemVoices = [];
+
+  function loadVoices() {
+    if ('speechSynthesis' in window) {
+      systemVoices = window.speechSynthesis.getVoices();
+    }
+  }
+
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+
+  function stopSpeech() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    isSpeaking = false;
+    const btn = document.getElementById('speakBtn');
+    if (btn) {
+      btn.innerHTML = '🔊';
+      btn.classList.remove('speaking-btn');
+    }
+  }
+
+  function toggleSpeech() {
+    if (!('speechSynthesis' in window)) {
+      toast('Speech synthesis is not supported in your browser');
+      return;
+    }
+
+    if (isSpeaking || window.speechSynthesis.speaking) {
+      stopSpeech();
+      return;
+    }
+
+    const currentItem = currentDeck[i];
+    const rawTextToRead = s ? currentItem.a : currentItem.q;
+    if (!rawTextToRead) return;
+
+    // Clean HTML formatting tags before sending text to speech engine
+    const textToRead = rawTextToRead.replace(/<[^>]*>/g, '');
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 1.0;
+
+    // Dynamically retrieve and attach available voices
+    const voices = systemVoices.length ? systemVoices : window.speechSynthesis.getVoices();
+    const selectedVoice = voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0];
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    utterance.onend = function() {
+      stopSpeech();
+    };
+
+    utterance.onerror = function(event) {
+      stopSpeech();
+      if (event.error !== 'canceled') {
+        toast('Speech error: Ensure system TTS voices are installed');
+      }
+    };
+
+    isSpeaking = true;
+    const btn = document.getElementById('speakBtn');
+    if (btn) {
+      btn.innerHTML = '⏹';
+      btn.classList.add('speaking-btn');
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
 
    async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
@@ -1343,6 +1445,7 @@
   }
 
   function render() {
+    stopSpeech();
     if (!currentDeck || currentDeck.length === 0) return;
     
     const rawContent = s ? currentDeck[i].a : currentDeck[i].q;
