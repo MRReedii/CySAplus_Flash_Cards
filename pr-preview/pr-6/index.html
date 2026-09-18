@@ -1055,28 +1055,39 @@
 <div id="toast"></div>
 
 <script>
-  // OPTION 1: JS PARSER FUNCTION
+  // JS PARSER FUNCTION (Supports structured options, numbered lists, and string/array forms)
   function parseRawQuestion(qText, aText) {
-    // Extract options (A., B., C., D.) from question string
+    if (typeof qText !== 'string') return { prompt: '', options: [], correctIndex: 0, explanation: '' };
+
     const lines = qText.split('\n').map(l => l.trim()).filter(Boolean);
-    const prompt = lines[0];
+    const prompt = lines[0] || '';
     const options = [];
-    
+
     lines.slice(1).forEach(line => {
-      if (/^[A-D][\.\)]/i.test(line)) {
-        options.push(line.replace(/^[A-D][\.\)]\s*/i, ''));
+      // Matches "A)", "A.", "1)", "1.", or "- " prefix formats
+      if (/^([A-D1-4][\.\)]|[-•])\s*/i.test(line)) {
+        options.push(line.replace(/^([A-D1-4][\.\)]|[-•])\s*/i, ''));
       }
     });
 
-    // Parse correct letter choice from answer string
-    const match = aText.match(/Correct Answer:\s*([A-D])/i);
-    const correctLetter = match ? match[1].toUpperCase() : 'A';
-    const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
-    const correctIndex = letterMap[correctLetter] ?? 0;
+    const aString = typeof aText === 'string' ? aText : JSON.stringify(aText || '');
+    
+    // Parse choice indicator (A-D or 1-4)
+    const match = aString.match(/(?:Correct Answer|Answer|Correct):\s*([A-D1-4])/i);
+    let correctIndex = 0;
 
-    // Extract rationale text
-    const rationaleMatch = aText.match(/Rationale:\s*([\s\S]+)/i);
-    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aText;
+    if (match) {
+      const val = match[1].toUpperCase();
+      if (['A', 'B', 'C', 'D'].includes(val)) {
+        correctIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 }[val];
+      } else if (!isNaN(val)) {
+        correctIndex = Math.max(0, parseInt(val, 10) - 1);
+      }
+    }
+
+    // Extract rationale / explanation text
+    const rationaleMatch = aString.match(/(?:Rationale|Explanation):\s*([\s\S]+)/i);
+    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aString;
 
     return {
       prompt: prompt,
@@ -1085,7 +1096,6 @@
       explanation: explanation
     };
   }
-
   // VERCEL API ENDPOINT FOR PUBLIC DATA UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
 
@@ -1829,7 +1839,6 @@
   // UPLOAD / REVIEW / IMPORT WORKFLOW
   let importedQuestionSet = null;
 
-  // OPTION 2: UPDATED handleFileUpload HANDLER
   function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1840,7 +1849,7 @@
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        const rawQuestions = Array.isArray(data) ? data : data.questions;
+        const rawQuestions = Array.isArray(data) ? data : (data.questions || data.cards || data.items);
 
         if (!rawQuestions || !Array.isArray(rawQuestions) || rawQuestions.length === 0) {
           toast("Invalid JSON question format");
@@ -1852,25 +1861,29 @@
           return;
         }
 
-        // Normalize raw 'q' and 'a' objects into quiz-ready objects
+        // Standardize item objects regardless of input key conventions
         const normalizedQuestions = rawQuestions.map(item => {
-          if (item.q && item.a) {
-            const parsed = parseRawQuestion(item.q, item.a);
-            return {
-              q: item.q,
-              a: item.a,
-              prompt: parsed.prompt,
-              options: parsed.options,
-              correctIndex: parsed.correctIndex,
-              explanation: parsed.explanation
-            };
+          if (typeof item === 'string') {
+            return { q: item, a: '', prompt: item, options: [], correctIndex: 0, explanation: '' };
           }
-          return item;
+
+          const qStr = item.q || item.question || item.prompt || item.stem || '';
+          const aStr = item.a || item.answer || item.explanation || item.rationale || '';
+
+          const parsed = parseRawQuestion(qStr, aStr);
+
+          return {
+            q: qStr,
+            a: aStr,
+            prompt: parsed.prompt,
+            options: item.options && Array.isArray(item.options) ? item.options : parsed.options,
+            correctIndex: typeof item.correctIndex === 'number' ? item.correctIndex : parsed.correctIndex,
+            explanation: item.explanation || parsed.explanation
+          };
         });
 
-        const deckTitle = data.title || file.name.replace(/\.json$/i, '');
+        const deckTitle = data.title || data.name || file.name.replace(/\.json$/i, '');
         
-        // Store loaded deck into customDecks object
         const deckKey = 'uploaded_' + Date.now();
         customDecks[deckKey] = {
           title: deckTitle,
@@ -1879,7 +1892,7 @@
 
         importedQuestionSet = { raw: data, title: deckTitle, questions: normalizedQuestions, filename: file.name };
         prepareImportReview();
-        toast(`Successfully loaded "${deckTitle}" (${normalizedQuestions.length} questions) — review before importing`);
+        toast(`Successfully loaded "${deckTitle}" (${normalizedQuestions.length} questions)`);
       } catch (err) {
         toast("Error parsing JSON file. Check format.");
         console.error(err);
