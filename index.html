@@ -3,10 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CySA+ Study Hub</title>
+  <title>CySA+ Study Hub & Quiz</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --panel: rgba(13, 28, 53, .88);
+      --text: #f6fbff;
+      --muted: #b9c9dc;
+      --accent: #00d4ff;
+      --accent2: #6d5dfc;
+      --line: rgba(255, 255, 255, .18);
+      --good: #47d17d;
+      --bad: #ff6b7a;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Poppins', sans-serif;
@@ -23,6 +35,29 @@
     @keyframes bg {
       0%, 100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
+    }
+
+    body.cyberpunk-mode {
+      --bg: #05050a;
+      --panel: rgba(0, 22, 8, .86);
+      --text: #00ff66;
+      --muted: #9dffc2;
+      --accent: #00ff66;
+      --accent2: #003311;
+      --line: #00ff66;
+      --good: #00ff66;
+      --bad: #ff2a62;
+      background: #05050a !important;
+      font-family: "Courier New", monospace !important;
+    }
+    body.cyberpunk-mode::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .22;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 255, 102, .32) 4px);
+      z-index: 99;
     }
 
     /* Background animation elements */
@@ -249,6 +284,13 @@
     .hero-logo { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.03em; margin-bottom: 4px; cursor: pointer; user-select: none; }
     .hero-tagline { opacity: 0.8; font-size: 0.85rem; max-width: 480px; margin: 0 auto; line-height: 1.4; }
 
+    /* Shield Button Styles from Matrixquiz */
+    .shield-wrap { position: relative; display: inline-flex; }
+    .secret-trigger { border: 0; background: transparent; color: inherit; font: inherit; font-size: 1em; cursor: pointer; padding: 0 .2rem; transition: transform .2s; }
+    .secret-trigger:hover, .secret-trigger:focus-visible { transform: scale(1.15) rotate(-5deg); outline: 2px solid var(--accent); outline-offset: 3px; border-radius: .25rem; }
+    .shield-hint { position: absolute; left: 0; bottom: calc(100% + .65rem); width: max-content; max-width: min(19rem, 80vw); padding: .55rem .7rem; border: 1px solid var(--accent); background: #020805; color: #00ff66; box-shadow: 0 0 14px rgba(0, 255, 102, .35); font: 700 .72rem/1.35 "Courier New", monospace; opacity: 0; pointer-events: none; transform: translateY(.25rem); transition: opacity .16s, transform .16s; z-index: 10; }
+    .shield-wrap:hover .shield-hint, .shield-wrap:focus-within .shield-hint { opacity: 1; transform: translateY(0); }
+
     .grid-decks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
     .deck-card {
       background: #ffffff12;
@@ -264,23 +306,6 @@
     .deck-title { font-weight: 600; font-size: 1rem; margin-bottom: 2px; }
     .deck-meta { opacity: 0.7; font-size: 0.82rem; margin-bottom: 8px; }
     .deck-description { font-size: 0.82rem; opacity: 0.8; line-height: 1.4; margin-bottom: 14px; }
-
-    .upload-box {
-      border: 2px dashed #00d4ff;
-      border-radius: 16px;
-      padding: 28px 20px;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.04);
-      transition: all 0.2s ease;
-      cursor: pointer;
-      margin-top: 16px;
-    }
-    .upload-box:hover {
-      border-color: #00d4ff;
-      background: rgba(0, 212, 255, 0.08);
-    }
-    .upload-icon { font-size: 1.5rem; margin-bottom: 4px; }
-    .upload-text { font-size: 0.82rem; opacity: 0.8; margin-bottom: 10px; }
 
     /* Upload / Import Workspace */
     #uploadView { width: min(960px, 100%); }
@@ -598,6 +623,20 @@
     .progress { height: 8px; background: #ffffff22; border-radius: 99px; overflow: hidden; }
     .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ffd0, #00a2ff); transition: width .2s; }
 
+    /* Quiz View Elements */
+    .quiz-scoreboard { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; margin: -.25rem 0 1rem; color: var(--text); font-family: "Courier New", monospace; font-size: .85rem; font-weight: 700; }
+    .digital-readout { padding: .4rem .55rem; border: 1px solid var(--accent); background: #020805; color: #00ff66; text-shadow: 0 0 8px #00ff66; }
+    .mode-note { margin: 0 0 1rem; color: var(--muted); font-size: .9rem; }
+    .options { display: grid; gap: .75rem; margin-top: 1.35rem; }
+    .option { text-align: left; background: transparent; line-height: 1.45; }
+    .option.correct { background: rgba(71,209,125,.2); border-color: var(--good); color: var(--good); }
+    .option.incorrect { background: rgba(255,107,122,.2); border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 1rem; padding: 1rem; border-left: 4px solid var(--accent); background: rgba(255,255,255,.06); line-height: 1.55; white-space: pre-wrap; }
+    .quiz-actions { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin-top: 1.25rem; }
+    .quiz-actions button { flex: 0 1 auto; }
+    .summary { text-align: center; }
+    .score { display: inline-grid; place-items: center; width: 8rem; height: 8rem; margin: 1rem; border: 4px solid var(--accent); border-radius: 50%; font-size: 2rem; font-weight: 800; }
+
     /* Toast */
     #toast {
       position: fixed;
@@ -621,6 +660,7 @@
     @media (max-width: 600px) {
       .continue-card { flex-direction: column; align-items: stretch; }
       .continue-progress { max-width: none; }
+      .quiz-actions { flex-direction: column; align-items: stretch; }
       .controls { flex-wrap: wrap; }
       .controls .btn-primary { flex: 1 1 40%; }
       .controls .btn-icon { flex: 0 0 auto; }
@@ -729,7 +769,13 @@
 
     <!-- TIGHTENED HERO HEADER -->
     <div class="glass-panel hero-panel">
-      <div class="hero-logo" id="heroTitle" onclick="handleTitleClick()">🛡 CYSA+ STUDY HUB</div>
+      <div class="hero-logo" id="heroTitle" onclick="handleTitleClick()">
+        <span class="shield-wrap">
+          <button id="quiz-trigger" class="secret-trigger" type="button" aria-label="Shield control" onclick="event.stopPropagation(); startQuiz();">🛡</button>
+          <span class="shield-hint" role="tooltip">HIDDEN THEME: click to access quiz mode</span>
+        </span> 
+        CYSA+ STUDY HUB
+      </div>
       <div class="hero-tagline">Shared cybersecurity question sets and study materials for our cohort. Study together. Share what works.</div>
     </div>
 
@@ -762,7 +808,10 @@
             <div class="deck-meta" id="defaultDeckMeta">Loading Deck... · Official Cohort Set</div>
             <div class="deck-description">Covers incident response, beaconing, SASE, EDR, threat intelligence, and vulnerability management.</div>
           </div>
-          <button class="btn btn-primary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('default')">Start Practice</button>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 0;" onclick="startDeck('default')">Start Practice</button>
+            <button class="btn btn-secondary" style="width: auto; margin-bottom: 0; white-space: nowrap;" onclick="startQuiz('default')">🎯 Quiz Mode</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1001,11 +1050,96 @@
     </div>
   </div>
 
+  <!-- QUIZ VIEW -->
+  <div id="quizView" class="view">
+    <div class="header">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px; margin-bottom: 0;" onclick="returnToFlashcards()">⬅ Back to Hub</button>
+      <div class="badge"><span id="quizModeLabel">Quiz</span> · Question <span id="quizPosition">1</span>/<span id="quizTotal">50</span></div>
+    </div>
+
+    <div id="quiz-scoreboard" class="quiz-scoreboard" aria-live="polite">
+      <span class="digital-readout">POINTS <span id="points">0000</span></span>
+      <span class="digital-readout">INCORRECT <span id="incorrect-count">00</span></span>
+    </div>
+
+    <div class="progress" aria-label="Progress"><div id="quizBar" class="bar"></div></div>
+
+    <div id="quiz-view-panel" class="glass-panel" aria-live="polite">
+      <p class="mode-note">Choose one answer to receive instant feedback.</p>
+      <div id="quiz-content"></div>
+    </div>
+  </div>
+
 </div>
 
 <div id="toast"></div>
 
 <script>
+  // UI HELPER FUNCTIONS
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // JS PARSER FUNCTION (Supports structured options, numbered lists, and string/array forms)
+  function parseRawQuestion(qText, aText) {
+    if (typeof qText !== 'string') return { prompt: '', options: [], correctIndex: 0, explanation: '' };
+
+    // 1. Separate prompt stem from options (matches A., B., C., D. or A), B), etc.)
+    const optionRegex = /(?:\r?\n|\s)+(?=[A-D1-4][\.\)]\s+)/i;
+    const parts = qText.split(optionRegex);
+    
+    // First segment is the question prompt
+    const prompt = (parts[0] || '').trim();
+    const options = [];
+
+    // Extract extracted option items
+    for (let i = 1; i < parts.length; i++) {
+      const cleanOption = parts[i].replace(/^[A-D1-4][\.\)]\s*/i, '').trim();
+      if (cleanOption) {
+        options.push(cleanOption);
+      }
+    }
+
+    const aString = typeof aText === 'string' ? aText : JSON.stringify(aText || '');
+
+    // 2. Parse answer key (Supports "Correct Answer: B", "Answer: B", "Correct: B", etc.)
+    const match = aString.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D1-4])/i);
+    let correctIndex = 0;
+
+    if (match) {
+      const val = match[1].toUpperCase();
+      if (['A', 'B', 'C', 'D'].includes(val)) {
+        correctIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 }[val];
+      } else if (!isNaN(val)) {
+        correctIndex = Math.max(0, parseInt(val, 10) - 1);
+      }
+    }
+
+    // 3. Extract explanation/rationale text
+    const rationaleMatch = aString.match(/(?:Rationale|Explanation):\s*([\s\S]+)/i);
+    const explanation = rationaleMatch ? rationaleMatch[1].trim() : aString.replace(/^Correct\s*Answer:\s*[A-D1-4]\s*/i, '').trim();
+
+    return {
+      prompt: prompt,
+      options: options.length >= 2 ? options : ["Option A", "Option B", "Option C", "Option D"],
+      correctIndex: correctIndex,
+      explanation: explanation
+    };
+  }
+
   // VERCEL API ENDPOINT FOR PUBLIC DATA UPLOAD
   const VERCEL_API_ENDPOINT = "https://cy-sa-plus-flash-cards-api.vercel.app/api/upload";
 
@@ -1033,7 +1167,7 @@
   }
 
   // DEFAULT PUBLIC DATA CONFIGURATION
-  const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy"; // Replace with your pinned CID
+  const DEFAULT_DECK_CID = "bafkreiez5oq7mquoi6kw7qgd32q2iqnmmczdt4ywqkxdaskqpuzosoxkqy";
   const IPFS_GATEWAY = "https://harlequin-bitter-booby-228.mypinata.cloud/ipfs/";
   const MAX_QUESTIONS = 350;
 
@@ -1180,7 +1314,6 @@
     resetImportView();
   }
 
-  // Compatibility helper for existing callers.
   function closeUploadModal() {
     showHub();
   }
@@ -1218,7 +1351,10 @@
     document.getElementById(viewId).classList.add('active');
   }
 
-  function showHub() { showView('hubView'); }
+  function showHub() { 
+    returnToFlashcards();
+    showView('hubView'); 
+  }
 
   // AUTHENTICATION HANDLERS
   function continueAsGuest() {
@@ -1264,11 +1400,208 @@
     btn.addEventListener('click', () => oauthLogin(btn.dataset.provider));
   });
 
-  // FALLBACK BASELINE DATA
+  // FALLBACK BASELINE DATA (Combined complete dataset from matrixquiz)
   const fallbackDeck = [
-    { q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution", a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline." },
-    { q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking", a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors." },
-    { q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity", a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing." }
+    {
+      q: "1. A forensic investigator struggles to match log entries across two distinct cloud platforms. Which infrastructure concept was neglected during deployment?\n\nA) Logging level verbosity\nB) Network time synchronization\nC) Serverless isolation namespaces\nD) Symmetric PKI key distribution",
+      a: "Correct Answer: B\n\nRationale: Time synchronization (NTP) is necessary to align log entries across different platforms and build an accurate timeline."
+    },
+    {
+      q: "2. An analyst checks a system running an application inside isolated microservices sharing a single host operating system kernel. What architecture is being used?\n\nA) Virtualization\nB) Serverless compute instances\nC) Containerization\nD) Software-Defined Networking",
+      a: "Correct Answer: C\n\nRationale: Containerization lets microservices share a single host OS kernel, separating them from standard full virtualization hypervisors."
+    },
+    {
+      q: "3. Traffic logs show an accounting machine regularly sending outbound HTTPS bursts to an unknown external server exactly every 60 seconds. What is this?\n\nA) Dynamic fuzzing\nB) Network segmentation failure\nC) Rogue peer-to-peer scanning\nD) Network beaconing activity",
+      a: "Correct Answer: D\n\nRationale: Highly predictable, automated outbound check-in traffic to an unknown IP indicates command-and-control beaconing."
+    },
+    {
+      q: "4. A network design routes corporate security policies directly through cloud edge elements, replacing standard physical firewalls. What architecture is this?\n\nA) SDN\nB) SASE\nC) Hybrid PKI\nD) Zero Trust",
+      a: "Correct Answer: B\n\nRationale: SASE fuses software-defined routing with cloud-delivered edge security functions like firewalls and brokers."
+    },
+    {
+      q: "5. Which protocol establishes centralized cryptographic credentials to let users access multiple disparate company resources through one initial authentication?\n\nA) Federation\nB) SSO\nC) PAM\nD) MFA",
+      a: "Correct Answer: B\n\nRationale: Single Sign-On (SSO) lets users authenticate once to access multiple separate systems securely."
+    },
+    {
+      q: "6. An engineer deploys a gateway utility to decrypt inbound traffic, inspect the files for active malware, and re-encrypt the data before internal delivery. What technique is this?\n\nA) SASE orchestration\nB) SSL inspection\nC) PKI certification management\nD) Data loss prevention",
+      a: "Correct Answer: B\n\nRationale: SSL inspection decrypts encrypted network traffic at a gateway to scan for threats before re-encrypting it."
+    },
+    {
+      q: "7. While auditing network metrics, an analyst notes a sudden massive surge in point-to-point connections directly between client laptops. What is this?\n\nA) Authorized serverless compute calls\nB) Irregular peer-to-peer communication\nC) Application-related service interruption\nD) Network beaconing activity",
+      a: "Correct Answer: B\n\nRationale: Direct workstation-to-workstation traffic breaks standard client-server models, signaling lateral movement."
+    },
+    {
+      q: "8. Which item stores low-level operating system configurations and is routinely monitored for malware persistence mechanisms like Run and RunOnce keys?\n\nA) File structures configuration locations\nB) System process hollowing nodes\nC) Windows Registry\nD) Hardware architecture firmware",
+      a: "Correct Answer: C\n\nRationale: The Windows Registry houses system configurations; malware uses its Run keys to maintain persistence."
+    },
+    {
+      q: "9. A security tool automatically runs an endpoint isolation routine immediately after discovering a valid file hash signature. What platform handled this?\n\nA) SIEM\nB) SOAR\nC) EDR\nD) CASB",
+      a: "Correct Answer: C\n\nRationale: Endpoint Detection and Response (EDR) agents actively record system behaviors and can automatically isolate individual hosts."
+    },
+    {
+      q: "10. An analyst needs to view domain registration records, owner details, and historical threat reports for an external IP address. Which combo should they use?\n\nA) Strings and Virus Total\nB) WHOIS and AbuseIPDB\nC) Nmap and Metasploit\nD) Burp Suite and Nikto",
+      a: "Correct Answer: B\n\nRationale: WHOIS checks domain registration records, while AbuseIPDB tracks the threat reputation and history of an IP address."
+    },
+    {
+      q: "11. Which data structure formats system metrics into clean, nested key-value pairs that are easily searched by defensive scripts using regular expressions?\n\nA) XML\nB) JSON\nC) Regex\nD) Strings",
+      a: "Correct Answer: B\n\nRationale: JSON structures log entries into scannable key-value pairs that can be searched using scripts and regular expressions."
+    },
+    {
+      q: "12. A highly skilled, state-funded threat group coordinates silent, multi-phase computer intrusion campaigns targeting proprietary manufacturing data. What actor type is this?\n\nA) Hacktivist\nB) Organized crime\nC) Advanced Persistent Threat (APT)\nD) Insider threat",
+      a: "Correct Answer: C\n\nRationale: Advanced Persistent Threats (APTs) are highly skilled, state-funded groups that run long-term, multi-stage cyber campaigns."
+    },
+    {
+      q: "13. Which concept defines an organization's confidence rating for newly ingested threat data based on speed, contextual application, and metric correctness?\n\nA) Timeliness, relevancy, and accuracy\nB) Tactics, techniques, and procedures (TTPs)\nC) Indicators of compromise (loC) tracking\nD) Open-source feed enrichment",
+      a: "Correct Answer: A\n\nRationale: Speed, context, and metric correctness define the fundamental attributes of threat intelligence data confidence."
+    },
+    {
+      q: "14. An engineer positions a false production asset on a segregated network space to catch, slow down, and study active intruder behaviors safely. What is this asset?\n\nA) Sandbox virtual machine\nB) Honeypot\nC) Container hypervisor\nD) Single pane of glass",
+      a: "Correct Answer: B\n\nRationale: A honeypot is a decoy asset built specifically to lure in attackers and safely study their technical methods."
+    },
+    {
+      q: "15. A script monitors application performance thresholds and alerts defenders if memory allocations plummet due to rogue process activities. What metric indicator is this?\n\nA) Network-related\nB) Application-related\nC) Host-related\nD) Social engineering",
+      a: "Correct Answer: C\n\nRationale: Resource loads on an endpoint—like processing spikes or memory drops—are host-related indicators."
+    },
+    {
+      q: "16. An engineer needs to inventory all connected devices and software configurations across an enterprise network without installing software agents on endpoints. What scan style is best?\n\nA) Agent-based credentialed\nB) Agentless asset discovery\nC) Static reverse engineering\nD) Passive baseline assessment",
+      a: "Correct Answer: B\n\nRationale: Agentless mapping scans probe devices over the network to fingerprint hardware and software without installing endpoint code."
+    },
+    {
+      q: "17. Which methodology uses a valid system profile to deeply audit missing security patches, hidden configurations, and system registry items directly?\n\nA) Non-credentialed scanning\nB) Credentialed scanning\nC) Active fuzzy probing\nD) Static code testing",
+      a: "Correct Answer: B\n\nRationale: Credentialed scanning uses valid administrative access to deeply audit internal patch levels and registry configurations."
+    },
+    {
+      q: "18. A testing pipeline pushes randomized, malformed characters into an application's data entry boxes to find unhandled code exceptions. What is this?\n\nA) Static reverse engineering\nB) Dynamic fuzzing\nC) Passive asset discovery\nD) Baseline profiling",
+      a: "Correct Answer: B\n\nRationale: Fuzzing is a dynamic software testing method that inputs random, invalid data to trigger crashes and unhandled exceptions."
+    },
+    {
+      q: "19. An analyst is auditing specialized networks running automated manufacturing lines and machinery controllers. What infrastructure type is this?\n\nA) SASE cloud space\nB) Operational Technology (OT) / ICS\nC) Virtualized serverless node\nD) Containerized microservices",
+      a: "Correct Answer: B\n\nRationale: Operational Technology (OT) and Industrial Control Systems (ICS) manage physical machinery and factory production lines."
+    },
+    {
+      q: "20. A compliance audit requires an organization to follow formal configurations defined by global standards for web application security. Which framework fits best?\n\nA) PCI DSS\nB) CIS benchmarks\nC) OWASP\nD) ISO 27000 series",
+      a: "Correct Answer: C\n\nRationale: OWASP publishes international security standards and documentation built specifically for securing web application layers."
+    },
+    {
+      q: "21. Which tool serves as an intercepting proxy used to step through web requests, manipulate parameters, and locate web application layer vulnerabilities?\n\nA) Nessus\nB) Burp Suite\nC) Angry IP Scanner\nD) OpenVAS",
+      a: "Correct Answer: B\n\nRationale: Burp Suite functions as an intercepting proxy, letting analysts modify web requests to test application logic and fields."
+    },
+    {
+      q: "22. An engineer needs to audit multi-tenant cloud storage structures for configuration errors using automated verification scripts. Which tool should they use?\n\nA) Prowler\nB) Metasploit\nC) Nmap\nD) GDB",
+      a: "Correct Answer: A\n\nRationale: Prowler is an open-source security tool built specifically to audit cloud configuration baselines and compliance."
+    },
+    {
+      q: "23. Which component of the CVSS metrics calculates the physical or logical route an attacker must take to reach and exploit a vulnerable asset?\n\nA) Attack complexity\nB) Privileges required\nC) Attack vector\nD) User interaction",
+      a: "Correct Answer: C\n\nRationale: The CVSS Attack Vector metric calculates the physical or logical route an attacker must take to exploit a vulnerability."
+    },
+    {
+      q: "24. A vulnerability scan flags a critical file error on a server, but manual testing confirms the server runs an updated operating system unaffected by that bug. What is this?\n\nA) True positive\nB) False positive\nC) True negative\nD) False negative",
+      a: "Correct Answer: B\n\nRationale: A false positive occurs when a security scanner flags an issue that does not actually exist on the target system."
+    },
+    {
+      q: "25. An attacker inserts malicious data into a database query entry line, tricking the backend interpreter into running arbitrary SQL statements. What flaw type is this?\n\nA) Cross-site scripting (XSS)\nB) Injection flaw\nC) Directory traversal\nD) Overflow vulnerability",
+      a: "Correct Answer: B\n\nRationale: Injection flaws occur when unvalidated user input is passed directly into an interpreter, running arbitrary commands."
+    },
+    {
+      q: "26. A web application fails to clear temporary authentication data when a user logs out, letting an attacker hijack the session token later. What vulnerability is this?\n\nA) Cryptographic failure\nB) Broken access control\nC) Insecure design\nD) Security misconfiguration",
+      a: "Correct Answer: B\n\nRationale: Failing to clear session data allows unauthorized users to bypass permission rules, pointing to broken access control."
+    },
+    {
+      q: "27. An application allows users to read restricted system files by typing custom path symbols like ../etc/passwd into the URL bar. What vulnerability is this?\n\nA) Remote code execution (RCE)\nB) Directory traversal\nC) Server-side request forgery\nD) Buffer overflow",
+      a: "Correct Answer: B\n\nRationale: Directory traversal uses path characters like ../ to escape web root directories and access restricted files."
+    },
+    {
+      q: "28. A system uses outdated cryptographic parameters that let attackers intercept and decrypt internal administrative traffic easily. What vulnerability category is this?\n\nA) Cryptographic failures\nB) Data poisoning\nC) End-of-life components\nD) Privilege escalation",
+      a: "Correct Answer: A\n\nRationale: Using weak cipher suites or broken encryption algorithms falls under the category of cryptographic failures."
+    },
+    {
+      q: "29. A business cannot patch a critical server because doing so would violate service uptime limits. The team deploys an intrusion prevention rule instead. What is this rule?\n\nA) Managerial preventative type\nB) Compensating control\nC) Risk transfer framework\nD) Threat modeling blueprint",
+      a: "Correct Answer: B\n\nRationale: A compensating control is an alternate security measure used when a standard patch or update cannot be deployed immediately."
+    },
+    {
+      q: "30. Which secure coding strategy uses specific server-side statements to neutralize characters before rendering user-supplied strings inside a browser?\n\nA) Input validation\nB) Output encoding\nC) Parameterized queries\nD) Session management",
+      a: "Correct Answer: B\n\nRationale: Output encoding neutralizes dangerous characters before they are rendered in a browser, stopping injection attacks."
+    },
+    {
+      q: "31. Which linear security framework tracks an incident across seven progressive stages, from initial reconnaissance up to actions on objectives?\n\nA) Diamond Model\nB) Cyber Kill Chain\nC) MITRE ATT&CK Matrix\nD) OSSTMM Guide",
+      a: "Correct Answer: B\n\nRationale: The Cyber Kill Chain is a linear framework tracking seven specific stages of an attack from start to finish."
+    },
+    {
+      q: "32. An investigator connects four nodes—Adversary, Capability, Infrastructure, and Victim—to analyze an active security breach. What model is this?\n\nA) Cyber Kill Chain\nB) OWASP Testing Guide\nC) Diamond Model\nD) MITRE ATT&CK",
+      a: "Correct Answer: C\n\nRationale: The Diamond Model links four core components—Adversary, Capability, Infrastructure, and Victim—to analyze intrusions."
+    },
+    {
+      q: "33. An incident responder carefully maintains a signed log showing exactly who held, moved, and secured a compromised server hard drive. What is this log?\n\nA) Legal hold directive\nB) Chain of custody\nC) Incident playbook record\nD) Root cause analysis",
+      a: "Correct Answer: B\n\nRationale: A chain of custody document tracks the chronological history of evidence handling to ensure it remains admissible in court."
+    },
+    {
+      q: "34. Which forensic action mathematically proves that captured digital evidence was not altered or corrupted after its collection from an endpoint?\n\nA) Legal hold integration\nB) Data integrity hashing\nC) Playbook documentation\nD) Tabletop training",
+      a: "Correct Answer: B\n\nRationale: Calculating cryptographic hashes (like SHA-256) validates data integrity by proving evidence has not changed since collection."
+    },
+    {
+      q: "35. A legal department issues an order forcing system administrators to stop all standard file deletion policies on servers involved in an ongoing lawsuit. What is this order?\n\nA) Chain of custody\nB) Root cause directive\nC) Legal hold\nD) Incident response plan",
+      a: "Correct Answer: C\n\nRationale: A legal hold forces an organization to stop standard data deletion policies to preserve evidence for an investigation."
+    },
+    {
+      q: "36. A security team disconnects an infected host from the production network to prevent ransomware from spreading to neighboring systems. What phase is this?\n\nA) Forensic analysis\nB) Scope identification\nC) Threat eradication\nD) Isolation containment",
+      a: "Correct Answer: D\n\nRationale: Disconnecting an infected system from the network isolates the threat and stops malware from moving laterally."
+    },
+    {
+      q: "37. After containing an incident, engineers wipe infected server arrays and reinstall core operating systems using trusted master images. What process is this?\n\nA) Forensic data capture\nB) Playbook creation\nC) Remediation and re-imaging\nD) Tabletop preparation",
+      a: "Correct Answer: C\n\nRationale: Eradication and recovery rely on wiping infected media and re-imaging systems from known clean baselines."
+    },
+    {
+      q: "38. Which document outlines predefined, step-by-step technical instructions that tell analysts exactly how to respond to specific threats like ransomware?\n\nA) Incident response plan\nB) Playbook\nC) Tabletop execution log\nD) Business continuity plan",
+      a: "Correct Answer: B\n\nRationale: A playbook provides step-by-step technical instructions for handling specific security incidents."
+    },
+    {
+      q: "39. A security department runs a simulated crisis where administrators talk through a mock breach scenario to evaluate their response readiness. What is this exercise?\n\nA) Dynamic fuzzing test\nB) Tabletop exercise\nC) Root cause analysis\nD) Forensic acquisition",
+      a: "Correct Answer: B\n\nRationale: A tabletop exercise is a discussion-based drill where teams talk through a breach scenario to test response plans."
+    },
+    {
+      q: "40. An investigator conducts a detailed review after an incident is resolved to figure out the exact security gap that allowed the compromise to happen. What is this process?\n\nA) Legal hold tracking\nB) Evidence data integrity validation\nC) Root cause analysis\nD) Attack surface management",
+      a: "Correct Answer: C\n\nRationale: Root cause analysis focuses on finding the underlying security gap that allowed an attack to succeed."
+    },
+    {
+      q: "41. A patching schedule is delayed because upgrading an essential database server would cause an extended manufacturing outage. What concept describes this barrier?\n\nA) SLA violation\nB) Remediation inhibitor\nC) Critical vulnerability trend\nD) Compliance reporting failure",
+      a: "Correct Answer: B\n\nRationale: Business dependencies or operational risks that delay patching are categorized as inhibitors to remediation."
+    },
+    {
+      q: "42. Which report segment translates technical vulnerabilities and asset risks into high-level business impacts tailored specifically for non-technical executives?\n\nA) Forensic timeline\nB) Root cause analysis\nC) Action plan portfolio\nD) Executive summary",
+      a: "Correct Answer: D\n\nRationale: An executive summary translates complex technical findings into high-level business risks for organizational leadership."
+    },
+    {
+      q: "43. A security metric tracks the average time from when an attacker first compromises a system to when a security tool or analyst flags the intrusion. What metric is this?\n\nA) Mean Time to Respond (MTTR)\nB) Mean Time to Remediate\nC) Mean Time to Detect (MTTD)\nD) Service-Level Objective (SLO)",
+      a: "Correct Answer: C\n\nRationale: Mean Time to Detect (MTTD) measures the average duration from when a breach occurs to when it is first identified."
+    },
+    {
+      q: "44. A director measures team efficiency by calculating the average duration from when an incident is verified to when isolation controls are successfully deployed. What metric is this?\n\nA) MTTD\nB) MTTR\nC) SLA compliance rate\nD) Alert volume trends",
+      a: "Correct Answer: B\n\nRationale: Mean Time to Respond (MTTR) tracks the average time from when a threat is identified to when containment controls are deployed."
+    },
+    {
+      q: "45. A formal contract sets an absolute deadline for a third-party vendor to patch critical software bugs on corporate systems. What is this contract?\n\nA) Memorandum of Understanding (MOU)\nB) Service-Level Agreement (SLA)\nC) Organizational governance policy\nD) Remediation action plan",
+      a: "Correct Answer: B\n\nRationale: A Service-Level Agreement (SLA) is a contract that defines explicit performance standards and response deadlines."
+    },
+    {
+      q: "46. Which communication workflow handles mandatory data breach notification messaging directly to government agencies and compliance enforcement boards?\n\nA) Public relations\nB) Law enforcement escalation\nC) Regulatory reporting\nD) Internal stakeholder briefing",
+      a: "Correct Answer: C\n\nRationale: Regulatory reporting handles mandatory data breach messaging directly to government agencies and oversight boards."
+    },
+    {
+      q: "47. An analyst builds a post-incident report detailing the full attack sequence. Where should they place the step-by-step chronological sequence of the breach?\n\nA) Executive summary\nB) Timeline\nC) Recommendations\nD) Evidence inventory",
+      a: "Correct Answer: B\n\nRationale: The timeline section of a post-incident report documents the chronological sequence of events during a breach."
+    },
+    {
+      q: "48. A company suffers a data breach exposing credit card details. Which external channel handles statement drops to the media and affected customers?\n\nA) Regulatory reporting\nB) Public relations\nC) Legal counsel escalation\nD) Law enforcement channels",
+      a: "Correct Answer: B\n\nRationale: Public relations handles external messaging, statement drops, and media updates after an incident occurs."
+    },
+    {
+      q: "49. A security team evaluates quarterly trends to identify the top 10 recurring software bugs across all company websites. What program uses this data?\n\nA) Incident escalation routing\nB) Vulnerability management reporting\nC) Tabletop training validation\nD) Forensic chain of custody",
+      a: "Correct Answer: B\n\nRationale: Vulnerability management reporting evaluates systemic metrics and top risk trends across enterprise platforms over time."
+    },
+    {
+      q: "50. An analyst discovers an ongoing intrusion and follows standard escalation paths to notify corporate executives and activate emergency incident teams. What process is this?\n\nA) Incident declaration and escalation\nB) Root cause analysis logging\nC) Compliance report tracking\nD) Remediation inhibitor documentation",
+      a: "Correct Answer: A\n\nRationale: Incident declaration and escalation handles activating emergency channels and notifying leadership when an alert crosses severity thresholds."
+    }
   ];
 
   let defaultDeck = fallbackDeck;
@@ -1357,18 +1690,15 @@
     window.speechSynthesis.speak(utterance);
   }
 
-   async function loadDefaultDeckFromIPFS() {
+  async function loadDefaultDeckFromIPFS() {
     const metaEl = document.getElementById('defaultDeckMeta');
     try {
-      // 1. Fetch active CIDs and deck list from backend
       const res = await fetch('https://cy-sa-plus-flash-cards-api.vercel.app/api/get-deck');
       if (!res.ok) throw new Error(`Backend error: ${res.status}`);
       const data = await res.json();
   
-      // Extract default CID (fallback to client constant if missing)
       const primaryCid = data.defaultCid || data.cid || DEFAULT_DECK_CID;
   
-      // 2. Load primary default deck content from Pinata Public Data
       const deckRes = await fetch(`${IPFS_GATEWAY}${primaryCid}`);
       if (!deckRes.ok) throw new Error(`Gateway error: ${deckRes.status}`);
       const deckData = await deckRes.json();
@@ -1379,18 +1709,15 @@
         if (metaEl) metaEl.textContent = `${defaultDeck.length} Questions · Official Public Data Set`;
       }
   
-      // 3. Render individual public sets fetched from Redis
       if (Array.isArray(data.decks) && data.decks.length > 0) {
         data.decks.forEach((deck, idx) => {
           if (deck && deck.cid) {
             const deckKey = `public_${deck.cid}`;
-            // Store in customDecks cache so startDeck(deckKey) can launch it
             customDecks[deckKey] = {
               title: deck.title || `Public Deck ${idx + 1}`,
-              questions: [] // Will fetch on-demand or pre-fetch below
+              questions: []
             };
   
-            // Fetch individual question set contents from Public Data
             fetch(`${IPFS_GATEWAY}${deck.cid}`)
               .then(r => r.json())
               .then(pData => {
@@ -1421,23 +1748,27 @@
           <div class="deck-meta">${safeCount} Questions · User Uploaded</div>
           <div class="deck-description">Custom imported question set.</div>
         </div>
-        <button class="btn btn-secondary start-deck-btn" style="width: 100%; margin-bottom: 0;">Start Practice</button>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="btn btn-secondary start-deck-btn" style="width: 100%; margin-bottom: 0;">Start Practice</button>
+          <button class="btn btn-secondary start-quiz-btn" style="width: auto; margin-bottom: 0; white-space: nowrap;">🎯 Quiz</button>
+        </div>
       </div>
     `;
 
     container.insertAdjacentHTML('beforeend', cardHtml);
 
-    const newCardBtn = container.lastElementChild.querySelector('.start-deck-btn');
-    newCardBtn.addEventListener('click', () => startDeck(deckKey, title));
+    const cardEl = container.lastElementChild;
+    cardEl.querySelector('.start-deck-btn').addEventListener('click', () => startDeck(deckKey, title));
+    cardEl.querySelector('.start-quiz-btn').addEventListener('click', () => startQuiz(deckKey, title));
   }
 
   function startDeck(deckKey, titleName) {
-    if (deckKey === 'default') {
+    if (deckKey === 'default' || !deckKey) {
       currentDeck = defaultDeck;
       document.getElementById('deckTitleDisplay').textContent = "CySA+ Flashcards";
     } else if (customDecks[deckKey]) {
       currentDeck = customDecks[deckKey].questions;
-      document.getElementById('deckTitleDisplay').textContent = titleName || "Custom Deck";
+      document.getElementById('deckTitleDisplay').textContent = titleName || customDecks[deckKey].title || "Custom Deck";
     }
     i = 0; s = false;
     render();
@@ -1464,6 +1795,219 @@
   function prev() { i = (i - 1 + currentDeck.length) % currentDeck.length; s = false; render(); }
   function shuffle() { currentDeck.sort(() => Math.random() - 0.5); i = 0; s = false; render(); }
 
+  /* QUIZ ENGINE INTEGRATION */
+  let quizMode = false;
+  let quizIndex = 0;
+  let quizSelected = false;
+  let quizScore = 0;
+  let quizIncorrect = 0;
+
+  function parseCard(card) {
+    // Quiz Mode uses structured options when the imported deck provides them.
+    // This keeps quiz mode compatible with the JSON data without requiring
+    // the question text to be reparsed into a different format.
+    if (card && typeof card === 'object') {
+      const qStr = card.q || card.question || card.prompt || card.stem || '';
+      const aStr = card.a || card.answer || card.explanation || card.rationale || '';
+
+      if (Array.isArray(card.options) && card.options.length >= 2) {
+        const options = card.options.map((option, index) => {
+          if (typeof option === 'string') {
+            return { letter: String.fromCharCode(65 + index), text: option.trim() };
+          }
+
+          const letter = String(
+            option.letter || option.value || String.fromCharCode(65 + index)
+          ).toUpperCase();
+          const text = option.text ?? option.label ?? option.value ?? '';
+          return { letter, text: String(text).trim() };
+        }).filter(option => option.text);
+
+        let correctLetter = '';
+        if (typeof card.correctIndex === 'number' && options[card.correctIndex]) {
+          correctLetter = options[card.correctIndex].letter;
+        }
+
+        if (!correctLetter) {
+          const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
+          if (answerMatch) correctLetter = answerMatch[1].toUpperCase();
+        }
+
+        return {
+          stem: qStr.replace(/\n\s*[A-D]\s*[\.)]\s+.*$/s, '').trim() || qStr.trim(),
+          options,
+          correctLetter,
+          rationale: card.explanation || aStr
+        };
+      }
+    }
+
+    // Legacy/raw deck fallback: parse all A-D options from the full question.
+    const qStr = typeof card === 'string' ? card : (card?.q || card?.question || '');
+    const aStr = typeof card === 'string' ? '' : (card?.a || card?.answer || '');
+
+    const optionMatches = [...qStr.matchAll(/(?:^|\n)\s*([A-D])\s*[\.)]\s*(.+?)(?=\n\s*[A-D]\s*[\.)]\s*|$)/gis)];
+    const options = optionMatches.map(match => ({
+      letter: match[1].toUpperCase(),
+      text: match[2].trim()
+    }));
+
+    const stem = optionMatches.length
+      ? qStr.slice(0, optionMatches[0].index).trim()
+      : qStr.trim();
+
+    const answerMatch = aStr.match(/(?:Correct\s*Answer|Answer|Correct):\s*([A-D])/i);
+    const correctLetter = answerMatch ? answerMatch[1].toUpperCase() : '';
+
+    return { stem, options, correctLetter, rationale: aStr };
+  }
+
+  function startQuiz(deckKey, titleName) {
+    if (deckKey === 'default' || !deckKey) {
+      currentDeck = defaultDeck;
+    } else if (customDecks[deckKey]) {
+      currentDeck = customDecks[deckKey].questions;
+    }
+
+    if (!currentDeck || currentDeck.length === 0) {
+      toast("No questions available for Quiz Mode");
+      return;
+    }
+
+    quizMode = true;
+    quizIndex = 0;
+    quizSelected = false;
+    quizScore = 0;
+    quizIncorrect = 0;
+
+    document.body.classList.add('cyberpunk-mode');
+    updateDigitalScoreboard();
+    showView('quizView');
+    renderQuiz();
+  }
+
+  function updateDigitalScoreboard() {
+    document.getElementById('points').textContent = String(quizScore * 100).padStart(4, '0');
+    document.getElementById('incorrect-count').textContent = String(quizIncorrect).padStart(2, '0');
+  }
+
+  function renderQuiz() {
+    const quizContent = document.getElementById('quiz-content');
+    
+    if (quizIndex >= currentDeck.length) {
+      const percentage = Math.round((quizScore / currentDeck.length) * 100);
+      document.getElementById('quizModeLabel').textContent = 'Quiz complete';
+      document.getElementById('quizPosition').textContent = currentDeck.length;
+      document.getElementById('quizTotal').textContent = currentDeck.length;
+      document.getElementById('quizBar').style.width = '100%';
+      
+      quizContent.innerHTML = `
+        <div class="summary">
+          <h2>Quiz Complete</h2>
+          <div class="score">${percentage}%</div>
+          <p>Points: ${quizScore * 100} · Correct: ${quizScore} · Incorrect: ${quizIncorrect}</p>
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button class="btn btn-primary" type="button" onclick="startQuiz()">Restart Quiz</button>
+            <button class="btn btn-secondary" type="button" onclick="returnToFlashcards()">Return to Hub</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const item = parseCard(currentDeck[quizIndex]);
+    document.getElementById('quizModeLabel').textContent = 'Quiz Mode';
+    document.getElementById('quizPosition').textContent = quizIndex + 1;
+    document.getElementById('quizTotal').textContent = currentDeck.length;
+    document.getElementById('quizBar').style.width = ((quizIndex + 1) / currentDeck.length * 100) + '%';
+
+    if (!item.options.length || !item.correctLetter) {
+      quizContent.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+          <p>This question cannot be parsed into multiple choice options.</p>
+          <p style="opacity: 0.7; font-size: 0.85rem; margin-top: 8px;">${escapeHtml(item.stem)}</p>
+          <button class="btn btn-primary" style="margin-top: 15px; width: auto;" onclick="quizIndex++; quizSelected=false; renderQuiz();">Skip Question ➡</button>
+        </div>
+      `;
+      return;
+    }
+
+    quizContent.replaceChildren();
+
+    const heading = document.createElement('h2');
+    heading.className = 'question';
+    heading.textContent = (quizIndex + 1) + '. ' + item.stem;
+    quizContent.appendChild(heading);
+
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options';
+
+    item.options.forEach(option => {
+      const button = document.createElement('button');
+      button.className = 'btn btn-secondary option';
+      button.type = 'button';
+      button.textContent = option.letter + ') ' + option.text;
+      button.addEventListener('click', () => selectQuizAnswer(option.letter, item, optionsContainer, button));
+      optionsContainer.appendChild(button);
+    });
+    quizContent.appendChild(optionsContainer);
+
+    const feedback = document.createElement('div');
+    feedback.id = 'quiz-feedback';
+    feedback.className = 'feedback hidden';
+    quizContent.appendChild(feedback);
+
+    const actions = document.createElement('div');
+    actions.className = 'quiz-actions';
+    
+    const exitBtn = document.createElement('button');
+    exitBtn.className = 'btn btn-secondary';
+    exitBtn.type = 'button';
+    exitBtn.textContent = 'Exit Quiz';
+    exitBtn.addEventListener('click', returnToFlashcards);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-primary';
+    nextBtn.type = 'button';
+    nextBtn.textContent = quizIndex === currentDeck.length - 1 ? 'See Score ➡' : 'Next Question ➡';
+    nextBtn.disabled = true;
+    nextBtn.id = 'quiz-next-btn';
+    nextBtn.addEventListener('click', () => { quizIndex++; quizSelected = false; renderQuiz(); });
+
+    actions.append(exitBtn, nextBtn);
+    quizContent.appendChild(actions);
+  }
+
+  function selectQuizAnswer(letter, item, container, clickedBtn) {
+    if (quizSelected) return;
+    quizSelected = true;
+
+    const correct = letter === item.correctLetter;
+    if (correct) quizScore++;
+    else quizIncorrect++;
+
+    updateDigitalScoreboard();
+
+    Array.from(container.children).forEach(button => {
+      button.disabled = true;
+      if (button.textContent.startsWith(item.correctLetter + ')')) button.classList.add('correct');
+    });
+
+    if (!correct) clickedBtn.classList.add('incorrect');
+
+    const feedback = document.getElementById('quiz-feedback');
+    feedback.textContent = (correct ? 'Correct!\n\n' : 'Incorrect.\n\n') + item.rationale;
+    feedback.classList.remove('hidden');
+
+    document.getElementById('quiz-next-btn').disabled = false;
+  }
+
+  function returnToFlashcards() {
+    quizMode = false;
+    document.body.classList.remove('cyberpunk-mode');
+    showView('hubView');
+  }
+
   // UPLOAD / REVIEW / IMPORT WORKFLOW
   let importedQuestionSet = null;
 
@@ -1477,229 +2021,90 @@
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        const questions = Array.isArray(data) ? data : data.questions;
-        const title = data.title || file.name.replace(/\.json$/i, '');
+        const rawQuestions = Array.isArray(data) ? data : (data.questions || data.cards || []);
 
-        if (!questions || !Array.isArray(questions) || questions.length === 0) {
-          toast("Invalid JSON question format");
+        if (!rawQuestions || !Array.isArray(rawQuestions) || rawQuestions.length === 0) {
+          toast("No valid questions found in JSON file");
           return;
         }
 
-        if (questions.length > MAX_QUESTIONS) {
-          toast(`Question set exceeds the ${MAX_QUESTIONS}-question limit`);
+        if (rawQuestions.length > MAX_QUESTIONS) {
+          toast(`Exceeds maximum limit of ${MAX_QUESTIONS} questions`);
           return;
         }
 
-        importedQuestionSet = { raw: data, title, questions, filename: file.name };
-        prepareImportReview();
-        toast(`Loaded "${title}" — review before importing`);
+        importedQuestionSet = {
+          title: data.title || file.name.replace(/\.json$/i, ''),
+          questions: rawQuestions
+        };
+
+        // Populate Import Review Form
+        document.getElementById('importDeckName').value = importedQuestionSet.title;
+        document.getElementById('importQuestionCount').textContent = rawQuestions.length;
+        document.getElementById('importCategoryCount').textContent = data.category || 'Auto';
+        
+        // Render Preview Items
+        const previewEl = document.getElementById('importPreview');
+        previewEl.innerHTML = '';
+        const previewQuestions = rawQuestions.slice(0, 3);
+
+        previewQuestions.forEach((item, idx) => {
+          const qText = item.q || item.question || item.prompt || 'Question text unavailable';
+          const pItem = document.createElement('div');
+          pItem.className = 'preview-item';
+          pItem.innerHTML = `<strong>Item ${idx + 1}</strong>${escapeHtml(qText)}`;
+          previewEl.appendChild(pItem);
+        });
+
+        document.getElementById('previewCount').textContent = `${previewQuestions.length} of ${rawQuestions.length} shown`;
+        document.getElementById('importReview').classList.remove('hidden');
+        toast("File parsed successfully!");
+
       } catch (err) {
+        toast("Invalid JSON format");
         console.error(err);
-        toast('Error parsing JSON file');
       }
     };
-
     reader.readAsText(file);
   }
 
-  function prepareImportReview() {
-    if (!importedQuestionSet) return;
-
-    const { title, questions } = importedQuestionSet;
-    document.getElementById('importReview').classList.remove('hidden');
-    document.getElementById('importDeckName').value = title;
-    document.getElementById('importQuestionCount').textContent = questions.length;
-
-    const categories = new Set(
-      questions.map(q => typeof q === 'object' ? (q.category || q.topic || q.domain) : null).filter(Boolean)
-    );
-    document.getElementById('importCategoryCount').textContent = categories.size || '—';
-    document.getElementById('importFormatStatus').textContent = '✓ Valid';
-    document.getElementById('importStatusLabel').textContent = 'READY FOR REVIEW';
-
-    const preview = document.getElementById('importPreview');
-    const previewQuestions = questions;
-
-    preview.innerHTML = previewQuestions.map((q, index) => {
-      const question = typeof q === 'string'
-        ? q
-        : (q.q || q.question || q.prompt || JSON.stringify(q));
-
-      return `
-        <div class="preview-item">
-          <strong>Question ${index + 1}</strong>
-          ${escapeHtml(String(question)).slice(0, 500)}
-        </div>
-      `;
-    }).join('');
-
-    document.getElementById('previewCount').textContent =
-      `${previewQuestions.length} of ${questions.length} shown`;
-
-    document.getElementById('importStatus').textContent =
-      'Review the options above before importing. More refinement controls can be added here without changing the Hub.';
-
-    document.getElementById('importReview').scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  }
-
-  function confirmImport() {
-    if (!importedQuestionSet) {
-      toast('Select a JSON question set first');
+  async function confirmImport() {
+    if (!importedQuestionSet || !importedQuestionSet.questions.length) {
+      toast("No data available to import");
       return;
     }
 
-    const saveOffline = document.getElementById('chkOffline').checked;
-    const savePublic = document.getElementById('chkPublic').checked;
-    const validate = true; // Defaulted to true internally without showing UI option
+    const deckName = document.getElementById('importDeckName').value.trim() || importedQuestionSet.title;
+    const isPublic = document.getElementById('chkPublic').checked;
+    const deckKey = 'custom_' + Date.now();
 
-    const title =
-      document.getElementById('importDeckName').value.trim() ||
-      importedQuestionSet.title;
+    const formattedDeck = {
+      title: deckName,
+      questions: importedQuestionSet.questions
+    };
 
-    const questions = importedQuestionSet.questions;
+    customDecks[deckKey] = formattedDeck;
+    renderDeckCard(deckKey, deckName, formattedDeck.questions.length);
 
-    if (validate) {
-      const invalid = questions.filter(q => {
-        if (typeof q === 'string') return !q.trim();
-        return !(q.q || q.question || q.prompt);
-      });
-
-      if (invalid.length) {
-        document.getElementById('importStatus').textContent =
-          `Validation found ${invalid.length} question(s) without a recognizable question field.`;
-        document.getElementById('importStatusLabel').textContent = 'VALIDATION WARNING';
-        toast('Validation found incomplete questions');
-        return;
+    if (isPublic) {
+      try {
+        await pinataIpfsUpload(formattedDeck);
+      } catch (err) {
+        console.warn("Public upload failed, saved locally instead.");
       }
-    }
-
-    const deckKey = 'deck_' + Date.now();
-    customDecks[deckKey] = { title, questions };
-
-    if (saveOffline) {
-      localStorage.setItem('saved_custom_decks', JSON.stringify(customDecks));
-    }
-
-    if (savePublic) {
-      publishImportedDeck(importedQuestionSet.raw, title, deckKey);
     } else {
-      renderDeckCard(deckKey, title, questions.length);
-      toast(`Imported "${title}"`);
-      showHub();
+      toast(`Imported set: ${deckName}`);
     }
-  }
 
-  async function publishImportedDeck(data, title, deckKey) {
-    try {
-      toast("Publishing set to Public Data...");
-      const ipfsResult = await pinataIpfsUpload(data);
-
-      if (ipfsResult && ipfsResult.IpfsHash) {
-        toast(`Published to Public Data! ID: ${ipfsResult.IpfsHash}`);
-      }
-
-      renderDeckCard(deckKey, title, data.questions?.length || 0);
-      showHub();
-    } catch (err) {
-      console.error(err);
-      toast("Imported locally, but Public Data publishing failed");
-      renderDeckCard(deckKey, title, data.questions?.length || 0);
-      showHub();
-    }
-  }
-
-  function escapeHtml(value) {
-    if (typeof value !== 'string') return '';
-    return value.replace(/[&<>"'`\\]/g, char => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-      '`': '&#x60;',
-      '\\': '&#x5C;'
-    }[char]));
-  }
-
-  // UTILITY HELPERS
-  let toastTimer;
-  function toast(msg) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
-  }
-
-  function updateNetworkBadge() {
-    const badge = document.getElementById('status-badge');
-    if (navigator.onLine) {
-      badge.textContent = '● Online';
-      badge.className = 'badge-mini badge-online';
-    } else {
-      badge.textContent = '● Offline';
-      badge.className = 'badge-mini badge-offline';
-    }
-  }
-
-  window.addEventListener('online', updateNetworkBadge);
-  window.addEventListener('offline', updateNetworkBadge);
-
-  // KEYBOARD CONTROLS
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && document.getElementById('uploadView').classList.contains('active')) {
-      showHub();
-      return;
-    }
-    if (!document.getElementById('studyView').classList.contains('active')) return;
-    if (e.code === "Space") { e.preventDefault(); flip(); }
-    if (e.key === "ArrowRight") next();
-    if (e.key === "ArrowLeft") prev();
-  });
-
-  // DRAG & DROP FOR QUESTION SET IMPORT
-  const uploadDropZone = document.getElementById('uploadDropZone');
-
-  if (uploadDropZone) {
-    ['dragenter', 'dragover'].forEach(name => {
-      uploadDropZone.addEventListener(name, event => {
-        event.preventDefault();
-        uploadDropZone.classList.add('drag-over');
-      });
-    });
-
-    ['dragleave', 'drop'].forEach(name => {
-      uploadDropZone.addEventListener(name, event => {
-        event.preventDefault();
-        uploadDropZone.classList.remove('drag-over');
-      });
-    });
-
-    uploadDropZone.addEventListener('drop', event => {
-      const file = event.dataTransfer.files[0];
-      if (!file) return;
-
-      if (!file.name.toLowerCase().endsWith('.json')) {
-        toast('Please drop a JSON file');
-        return;
-      }
-
-      const input = document.getElementById('jsonFileInput');
-      const transfer = new DataTransfer();
-      transfer.items.add(file);
-      input.files = transfer.files;
-      handleFileUpload({ target: input });
-    });
+    showHub();
   }
 
   // INITIALIZATION
-  loadDefaultDeckFromIPFS();
-  applyFeatureFlags();
-  syncDevControlSelects();
-  updateNetworkBadge();
+  window.addEventListener('DOMContentLoaded', () => {
+    applyFeatureFlags();
+    syncDevControlSelects();
+    loadDefaultDeckFromIPFS();
+  });
 </script>
 </body>
 </html>
